@@ -1,0 +1,5 @@
+dotnet new install Microsoft.FluentUI.AspNetCore.Templates
+dotnet new fluentblazor --use-program-main --interactivity Server --all-interactive
+## To track and update outdated deps
+dotnet new tool-manifest
+dotnet tool install --local dotnet-outdated-tool

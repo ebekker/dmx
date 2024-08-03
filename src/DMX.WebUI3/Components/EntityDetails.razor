@@ -1,0 +1,140 @@
+﻿<style>
+    .dlgbody {
+        Xborder: solid 1px red;
+        margin: 0px;
+        height: 100%;
+        display: grid !important;
+        grid-template-rows: auto 40px;
+    }
+
+    .rz-dialog-content {
+        Xborder: solid 1px green;
+        margin: 0;
+        padding: 5px;
+        height: 100%;
+    }
+
+    .dlgtabs .rz-tabview-panel {
+        padding: 3px;
+    }
+
+    .dlgbuttons {
+        Xborder: 1px dotted pink;
+        grid-row: 2;
+    }
+</style>
+<style>
+    .table-cell-edited {
+        position: relative;
+    }
+
+        .table-cell-edited::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-top: 10px solid red;
+            border-left: 10px solid transparent;
+        }
+</style>
+
+<RadzenStack class="dlgbody">
+    <RadzenTabs class="dlgtabs" Style="grid-row: 1;">
+        <Tabs>
+            <RadzenTabsItem Text="General">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="3px">
+                    <RadzenFormField Text="Name">
+                        <RadzenTextBox @bind-Value=@Entity.Name />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Description">
+                        <RadzenTextArea @bind-Value=@Entity.Description />
+                    </RadzenFormField>
+                </RadzenStack>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Attributes">
+                <RadzenDataGrid TItem="DmxAttribute" ColumnWidth="200px"
+                                AllowAlternatingRows=@false
+                                AllowFiltering=@false AllowPaging=@false
+                                xx-PageSize=@(100)
+                                AllowSorting=@false
+                                Data=@(Entity.Attributes)
+                                RowUpdate=@(OnUpdateRow)
+                                CellClick=@(OnCellClick)>
+                    <Columns>
+                        <RadzenDataGridColumn TItem=@(DmxAttribute)
+                                              Property=@nameof(DmxAttribute.IsPrimaryKey)
+                                              Title="PK" Frozen=@false
+                                              Width="20px"
+                                              IsInEditMode=@IsEditing>
+                            <Template Context="att">
+                                <RadzenCheckBox @bind-Value=@(att.IsPrimaryKey) />
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                        <RadzenDataGridColumn TItem=@(DmxAttribute)
+                                              Property=@nameof(DmxAttribute.Name)
+                                              Title="Name" Frozen=@false
+                                              IsInEditMode=@IsEditing>
+                            <Template Context="att">
+                                <RadzenText Text="@(att.Name)" />
+                            </Template>
+                            <EditTemplate Context="att">
+                                <RadzenTextBox @bind-Value="att.Name"
+                                               Style="width:200px; display: block"
+                                               Name="ShipCity"
+                                               aria-label="Enter Name" />
+                                <RadzenRequiredValidator Text="ShipCity is required"
+                                                         Component="ShipCity"
+                                                         Popup="true" />
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem=@(DmxAttribute)
+                                              Property=@nameof(DmxAttribute)
+                                              Title="Name" Frozen=@false
+                                              IsInEditMode=@IsEditing>
+                            <Template Context="att">
+                                <RadzenText Text="@(att.Name)" />
+                            </Template>
+                            <EditTemplate Context="att">
+                                <RadzenTextBox @bind-Value="att.Name"
+                                               Style="width:200px; display: block"
+                                               Name="ShipCity"
+                                               aria-label="Enter Name" />
+                                <RadzenRequiredValidator Text="ShipCity is required"
+                                                         Component="ShipCity"
+                                                         Popup="true" />
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem=@(DmxAttribute)
+                                              Property=@nameof(DmxAttribute.IsRequired)
+                                              Title="NN" Frozen=@false
+                                              Width="20px"
+                                              IsInEditMode=@IsEditing>
+                            <Template Context="att">
+                                <RadzenCheckBox @bind-Value=@(att.IsRequired)
+                                                ReadOnly=@(att.IsPrimaryKey) />
+                            </Template>
+                        </RadzenDataGridColumn>
+
+                    </Columns>
+                </RadzenDataGrid>
+
+
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+    <RadzenStack class="dlgbuttons" Orientation="Orientation.Horizontal"
+                 Gap="0.5rem" AlignItems="AlignItems.Center" Style=""
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenButton Text="Refresh" Click=@(() => StateHasChanged())
+                      ButtonStyle="ButtonStyle.Light" />
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenButton Text="Ok" Style="width: 80px;"
+                          Click="() => DialogSvc.Close(true)" />
+            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light"
+                          Click="() => DialogSvc.Close(false)" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenStack>

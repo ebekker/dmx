@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <link rel="stylesheet" href="app.css" />
+    <link rel="stylesheet" href="DMX.WebUI3.styles.css" />
+
+    <HeadOutlet @rendermode=@(InteractiveServer) />
+
+    @* <RadzenTheme Theme="material" @rendermode="InteractiveAuto" /> *@
+    <RadzenTheme Theme="default" @rendermode=@(InteractiveServer) />
+
+    <link rel="stylesheet" href="_content/Z.Blazor.Diagrams/style.min.css" />
+    <!-- If you want the default style -->
+    <link rel="stylesheet" href="_content/Z.Blazor.Diagrams/default.styles.min.css" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+
+    <script src="_content/Radzen.Blazor/Radzen.Blazor.js?v=@(typeof(Radzen.Colors).Assembly.GetName().Version)"></script>
+
+    <script src="_content/Z.Blazor.Diagrams/script.min.js"></script>
+</body>
+
+</html>

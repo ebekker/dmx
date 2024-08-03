@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>PREVIEW</LangVersion>
+
+    <!-- Temporary to work around https://github.com/dotnet/aspnetcore/issues/39606 -->
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+  </PropertyGroup>
+
+  <!-- Refine the list of "watched" assets as per:
+       https://github.com/aspnet/DotNetTools/blob/master/src/dotnet-watch/README.md#msbuild
+       https://github.com/aspnet/DotNetTools/blob/master/src/dotnet-watch/assets/DotNetWatch.targets#L4
+    -->
+  <!--<Target Name="AddMyWatchItems" BeforeTargets="GenerateWatchList">
+    <ItemGroup>
+      <Watch Include="**\*.js;**\*.css;**\*.cs;**\*.razor;**\*.html" />
+    </ItemGroup>
+  </Target>-->
+  
+  <ItemGroup>
+	  <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.*-* " />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.*-* " />
+    <PackageReference Include="Z.Blazor.Diagrams" Version="3.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DMX.AppDB\DMX.AppDB.csproj" />
+  </ItemGroup>
+
+</Project>

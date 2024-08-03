@@ -1,0 +1,74 @@
+﻿<div class="navmenu" style="border: solid 1px red;">
+    <input type="checkbox" title="Menu expand/collapse toggle" id="navmenu-toggle" class="navmenu-icon" />
+    <label for="navmenu-toggle" class="navmenu-icon"><FluentIcon Value="@(new Icons.Regular.Size20.Navigation())" Color="Color.Fill" /></label>
+    <nav class="sitenav" aria-labelledby="main-menu" style="border: solid 1px orange;">
+        <FluentNavMenu Id="main-menu" Collapsible="true" Width="250" Title="Navigation menu" @bind-Expanded="expanded" CustomToggle="true">
+            <FluentNavLink Href="/" Match="NavLinkMatch.All" Icon="@(new Icons.Regular.Size20.Home())" IconColor="Color.Accent">Home</FluentNavLink>
+            <FluentNavLink Href="counter" Icon="@(new Icons.Regular.Size20.NumberSymbolSquare())" IconColor="Color.Accent">Counter</FluentNavLink>
+            <FluentNavLink Href="weather" Icon="@(new Icons.Regular.Size20.WeatherPartlyCloudyDay())" IconColor="Color.Accent">Weather</FluentNavLink>
+        </FluentNavMenu>
+    </nav>
+    @*
+    <div style="height: calc(100% - 2px); border: solid 1px green;">
+        Entities
+    </div>
+    *@
+
+    <div>
+        <FluentButton @onclick="@OpenDialogAsync">Add Entity</FluentButton>
+        <FluentButton>Add Relationship</FluentButton>
+    </div>
+</div>
+
+@inject IDialogService DialogSvc
+
+@code {
+    private bool expanded = true;
+
+    // SimplePerson simplePerson = new()
+    //     {
+    //         Firstname = "Dan",
+    //         Lastname = "Sanderson",
+    //         Age = 42,
+    //     };
+
+    private async Task OpenDialogAsync()
+    {
+        DmxEntity entity1 = new()
+        {
+            Id = Guid.Empty,
+            Name = "Table1",
+            Description = "This is the first table.",
+        };
+
+
+        DialogParameters parameters = new()
+        {
+            Title = $"Editing {entity1.Name}",
+            PrimaryAction = "Save",
+            PrimaryActionEnabled = false,
+            SecondaryAction = "Cancel",
+            Width = "500px",
+            TrapFocus = false,
+            Modal = true,
+            PreventScroll = false,
+        };
+
+        parameters.DialogType = DialogType.SplashScreen;
+        parameters.Height = "90vh";
+
+        IDialogReference dialog = await DialogSvc.ShowDialogAsync<EntityDetails>(entity1, parameters);
+        DialogResult? result = await dialog.Result;
+
+
+        if (result.Data is not null)
+        {
+            DmxEntity? simplePerson = result.Data as DmxEntity;
+            Console.WriteLine($"Dialog closed by {simplePerson?.Name} - Canceled: {result.Cancelled}");
+        }
+        else
+        {
+            Console.WriteLine($"Dialog closed - Canceled: {result.Cancelled}");
+        }
+    }
+}

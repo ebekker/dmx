@@ -1,0 +1,20 @@
+
+## Add/Apply EF Core Migration
+
+(from AppDB project root dir)
+
+## Are there any pending changes?
+dotnet ef migrations has-pending-model-changes
+
+
+## After schema changes in code
+$migname = 'Initial'
+dotnet ef migrations add $migname 
+## -- or --
+dotnet ef migrations add --no-build $migname
+
+
+## Applying schema changes to DB
+dotnet ef database update
+## -- or --
+dotnet ef database update --no-build

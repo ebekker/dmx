@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>PREVIEW</LangVersion>
+  </PropertyGroup>
+
+  <!-- Refine the list of "watched" assets as per:
+       https://github.com/aspnet/DotNetTools/blob/master/src/dotnet-watch/README.md#msbuild
+       https://github.com/aspnet/DotNetTools/blob/master/src/dotnet-watch/assets/DotNetWatch.targets#L4
+    -->
+  <Target Name="AddMyWatchItems" BeforeTargets="GenerateWatchList">
+    <ItemGroup>
+      <Watch Include="**\*.js;**\*.css;**\*.cs;**\*.razor;**\*.html" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DMX.AppDB\DMX.AppDB.csproj" />
+  </ItemGroup>
+
+</Project>

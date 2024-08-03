@@ -1,0 +1,4 @@
+dotnet new blazor --use-program-main --interactivity Server --all-interactive --empty
+## To track and update outdated deps
+dotnet new tool-manifest
+dotnet tool install --local dotnet-outdated-tool

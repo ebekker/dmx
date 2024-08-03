@@ -1,0 +1,129 @@
+﻿@inherits LayoutComponentBase
+
+<RadzenLayout style="position: relative;">
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+            <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+            <RadzenMenu Click="OnParentClicked">
+                <RadzenMenuItem Text="General" Icon="home">
+                    <RadzenMenuItem Text="Buttons" Icon="account_circle"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Menu" Icon="line_weight" Disabled="true"></RadzenMenuItem>
+                    <RadzenMenuItem Text="ChildClick"   Icon="attach_file" Click="OnChildClicked" Disabled="true"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Dialog" Icon="perm_media"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Notification" Icon="announcement"></RadzenMenuItem>
+                </RadzenMenuItem>
+                <RadzenMenuItem Text="Inputs" Icon="payment" Disabled="true">
+                    <RadzenMenuItem Text="CheckBox" Icon="check_circle"></RadzenMenuItem>
+                    <RadzenMenuItem Text="TextBox" Icon="input"></RadzenMenuItem>
+                    <RadzenMenuItem Text="TextArea" Icon="description"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Password" Icon="payment"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Numeric" Icon="aspect_ratio"></RadzenMenuItem>
+                    <RadzenMenuItem Text="DatePicker" Icon="date_range"></RadzenMenuItem>
+                </RadzenMenuItem>
+                <RadzenMenuItem Text="More">
+                    <RadzenMenuItem Text="Item1"></RadzenMenuItem>
+                    <RadzenMenuItem Text="Item2"></RadzenMenuItem>
+                    <RadzenMenuItem Text="More items">
+                        <RadzenMenuItem Text="More sub items">
+                            <RadzenMenuItem Text="Item1"></RadzenMenuItem>
+                            <RadzenMenuItem Text="Item2"></RadzenMenuItem>
+                        </RadzenMenuItem>
+                    </RadzenMenuItem>
+                </RadzenMenuItem>
+                <RadzenMenuItem Text="Ent" Click=@NewEntity />
+                <RadzenMenuItem Text="Rel" Click=@NewRelationship />
+            </RadzenMenu>
+            
+            <RadzenSelectBar @bind-Value=@value TValue="int" class="rz-ml-10">
+                <Items>
+                    <RadzenSelectBarItem Icon="arrow_selector_tool" Value=@(0) />
+                    <RadzenSelectBarItem Icon="table_chart" Value=@(1) />
+                    <RadzenSelectBarItem Icon="diagonal_line" Value=@(2) />
+                    <RadzenSelectBarItem Icon="table_view" Value=@(3) />
+                    <RadzenSelectBarItem Icon="pan_tool" Value=@(4) />
+                </Items>
+            </RadzenSelectBar>
+        </RadzenStack>
+    </RadzenHeader>
+    <RadzenSidebar Responsive="false" @bind-Expanded="@sidebarExpanded" style="position: absolute">
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="Home" Icon="home" />
+            <RadzenPanelMenuItem Text="Collaborators" Icon="account_box" />
+        </RadzenPanelMenu>
+        <div class="rz-p-4">
+            Perspective Details:
+            <div>W: @_diagramContainer?.Width</div>
+            <div>H: @_diagramContainer?.Height</div>
+        </div>
+    </RadzenSidebar>
+    <RadzenBody Style="padding: 0; ">
+        @Body
+    </RadzenBody>
+    <RadzenFooter>
+        <div class="rz-p-1">
+            Perspective Details:
+            <span>W: @_diagramContainer?.Width</span>
+            <span>H: @_diagramContainer?.Height</span>
+
+            Entity Details Size:
+            <span>X: @AppState.EntityDetailsPoint?.X</span>
+            <span>Y: @AppState.EntityDetailsPoint?.Y</span>
+            <span>W: @AppState.EntityDetailsSize.Width</span>
+            <span>H: @AppState.EntityDetailsSize.Height</span>
+        </div>
+    </RadzenFooter>
+</RadzenLayout>
+
+@* 
+<RadzenLayout style="position: relative;grid-template-areas: 'rz-sidebar rz-header' 'rz-sidebar rz-body'">
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+            <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+            <RadzenLabel Text="Header" />
+        </RadzenStack>
+    </RadzenHeader>
+    <RadzenSidebar Responsive="false" @bind-Expanded="@sidebarExpanded" style="position: absolute; z-index: 3">
+        <RadzenStack AlignItems="AlignItems.End" class="rz-p-2">
+            <RadzenButton Icon="west" Variant="Variant.Text" ButtonStyle="ButtonStyle.Secondary" Click="@(() => sidebarExpanded = false)" />
+        </RadzenStack>
+        <RadzenPanelMenu>
+            <RadzenPanelMenuItem Text="Home" Icon="home" />
+            <RadzenPanelMenuItem Text="Users" Icon="account_box" />
+        </RadzenPanelMenu>
+        <div class="rz-p-4">
+            Sidebar
+        </div>
+    </RadzenSidebar>
+    <RadzenBody>
+        <div class="rz-p-4">
+            @Body
+        </div>
+    </RadzenBody>
+    @if (sidebarExpanded)
+    {
+        <div @onclick="@(() => sidebarExpanded = false)" class="rz-dialog-mask" style="position: absolute; z-index: 2"></div>
+    }
+</RadzenLayout>
+ *@
+
+<RadzenComponents @rendermode=@(InteractiveServer) />
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+
+
+@code {
+    bool sidebarExpanded = false;
+    int value;
+
+    void OnParentClicked(MenuItemEventArgs args)
+    {
+    }
+
+    void OnChildClicked(MenuItemEventArgs args)
+    {
+    }
+}

@@ -396,3 +396,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+## Personal standard stuff
+
+_IGNORE/
+_TMP/
