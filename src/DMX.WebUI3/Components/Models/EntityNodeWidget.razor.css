@@ -1,0 +1,65 @@
+﻿div.entity-card {
+    Xwidth: 230px;
+    min-width: 150px;
+    /*outline: 1px solid black;*/
+    padding: 0;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+    div.entity-card.depchild {
+        border-bottom-left-radius: 15px;
+        border-bottom-right-radius: 15px;
+    }
+
+div.entity-name {
+    background-color: rgb(255, 255, 255, 0.1);
+    font-weight: bold;
+    font-size: 110%;
+    margin: 0;
+    padding: 3px;
+    margin-bottom: 2px;
+}
+
+div.attrs {
+    background-color: white;
+    padding: 5px;
+    border: solid 1px black;
+}
+.selected div.attrs {
+    padding: 5px;
+    border: solid 1px #88f;
+}
+.depchild div.attrs {
+    border-radius: 15px;
+}
+
+div.attrs-pk {
+    border-bottom: solid 1px black;
+    margin-bottom: 4px;
+    padding-bottom: 4px;
+}
+
+::deep .pk-name,
+::deep .attr-required .npk-name {
+    font-weight: bold;
+}
+
+::deep .diagram-port {
+    position: absolute;
+    width: 30px;
+    height: 20px;
+    background-color: black;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+    ::deep .diagram-port.top {
+        border-top-left-radius: 50%;
+        border-top-right-radius: 50%;
+        top: -10px;
+    }
+
+    ::deep .diagram-port.bottom {
+        border-bottom-left-radius: 50%;
+        border-bottom-right-radius: 50%;
+        bottom: -30px;
+    }

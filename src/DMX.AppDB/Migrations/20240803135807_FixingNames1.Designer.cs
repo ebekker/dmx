@@ -3,6 +3,7 @@ using System;
 using DMX.AppDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DMX.AppDB.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240803135807_FixingNames1")]
+    partial class FixingNames1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.0-preview.6.24327.4");
@@ -44,9 +47,6 @@ namespace DMX.AppDB.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
-
-                    b.Property<int>("SortOrder")
-                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
@@ -229,13 +229,13 @@ namespace DMX.AppDB.Migrations
             modelBuilder.Entity("DMX.AppDB.Models.DmxRelationship", b =>
                 {
                     b.HasOne("DMX.AppDB.Models.DmxEntity", "Child")
-                        .WithMany("RelationshipsAsChild")
+                        .WithMany()
                         .HasForeignKey("ChildId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DMX.AppDB.Models.DmxEntity", "Parent")
-                        .WithMany("RelationshipsAsParent")
+                        .WithMany()
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -275,10 +275,6 @@ namespace DMX.AppDB.Migrations
             modelBuilder.Entity("DMX.AppDB.Models.DmxEntity", b =>
                 {
                     b.Navigation("Attributes");
-
-                    b.Navigation("RelationshipsAsChild");
-
-                    b.Navigation("RelationshipsAsParent");
                 });
 
             modelBuilder.Entity("DMX.AppDB.Models.DmxRelationship", b =>

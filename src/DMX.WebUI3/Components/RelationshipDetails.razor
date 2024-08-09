@@ -1,0 +1,87 @@
+﻿<RadzenStack class="dlgbody">
+    <RadzenTabs class="dlgtabs" Style="grid-row: 1;">
+        <Tabs>
+            <RadzenTabsItem Text="General">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="3px"
+                             class="fullsize">
+                    <RadzenFormField Text="Name">
+                        <RadzenTextBox @bind-Value=@Relationship.Name />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Description">
+                        <RadzenTextArea @bind-Value=@Relationship.Description />
+                    </RadzenFormField>
+                </RadzenStack>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Attributes">
+                <RadzenDataGrid TItem="DmxRelationshipPair" ColumnWidth="200px"
+                                AllowAlternatingRows=@false
+                                AllowFiltering=@false AllowPaging=@false
+                                AllowColumnResize=@true
+                                xx-PageSize=@(100)
+                                AllowSorting=@false
+                                Data=@(Relationship.Attributes)
+                                RowUpdate=@(OnUpdateRow)
+                                CellClick=@(OnCellClick)>
+                    <Columns>
+                        <RadzenDataGridColumn TItem=@(DmxRelationshipPair) MinWidth="5rem"
+                                              Title="Parent Attribute" Frozen=@false
+                                              IsInEditMode=@IsEditing>
+                            <Template Context="pair">
+                                <RadzenText Text="@(pair.Parent.Name)" />
+                            </Template>
+                        </RadzenDataGridColumn>
+                        <RadzenDataGridColumn TItem=@(DmxRelationshipPair) MinWidth="5rem"
+                                              Title="Child Attribute" Frozen=@false
+                                              IsInEditMode=@IsEditing>
+                            <Template Context="pair">
+                                <RadzenTextBox Value="@(pair.Child.Name)" ReadOnly=@true Disabled=@true />
+                            </Template>
+                            <EditTemplate Context="pair">
+                                <RadzenTextBox @bind-Value="pair.Child.Name"
+                                               Style="width:200px; display: block"
+                                               aria-label="Select Child Attribute" />
+                            </EditTemplate>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Visual">
+                <RadzenStack Orientation=@(Orientation.Vertical)>
+                    <RadzenFormField Text="Child Edge">
+                        <RadzenNumeric @bind-Value=@(Relationship.ChildEdge) />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Child Offset">
+                        <RadzenNumeric @bind-Value=@(Relationship.ChildEdgeOffset) />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Parent Edge">
+                        <RadzenNumeric @bind-Value=@(Relationship.ParentEdge) />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Child Offset">
+                        <RadzenNumeric @bind-Value=@(Relationship.ParentEdgeOffset) />
+                    </RadzenFormField>
+                </RadzenStack>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Memo" Style="height: 100%;">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="3px"
+                             class="fullsize">
+                    <RadzenTextArea @bind-Value=@(Relationship.Memo)
+                                    class="noresize fullsize" />
+                </RadzenStack>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+    <RadzenStack class="dlgbuttons" Orientation="Orientation.Horizontal"
+                 Gap="0.5rem" AlignItems="AlignItems.Center" Style=""
+                 JustifyContent="JustifyContent.SpaceBetween">
+        @*
+        <RadzenButton Text="Refresh" Click=@(() => StateHasChanged())
+                      ButtonStyle="ButtonStyle.Light" />
+                      *@
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenButton Text="Ok" Style="width: 80px;"
+                          Click="() => DialogSvc.Close(true)" />
+            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light"
+                          Click="() => DialogSvc.Close(false)" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenStack>

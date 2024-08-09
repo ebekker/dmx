@@ -10,6 +10,7 @@ public partial class MainLayout : IDisposable
     [Inject] private DialogService DialogSvc { get; set; } = default!;
     [Inject] private AppState AppState { get; set; } = default!;
     [Inject] private AppEvents AppEvents { get; set; } = default!;
+    [Inject] private AppChanges AppChanges { get; set; } = default!;
 
     private bool _disposedValue;
 
@@ -19,12 +20,32 @@ public partial class MainLayout : IDisposable
     {
         AppEvents.OnAppStateChanged += AppEvents_OnAppStateChanged;
         AppEvents.OnDiagramContainerChanged += AppEvents_OnDiagramContainerChanged;
+
+        AppEvents.OnChangeAdded += AppEvents_OnChangeAdded;
+        AppEvents.OnChangeUndo += AppEvents_OnChangeUndo;
+        AppEvents.OnChangeRedo += AppEvents_OnChangeRedo;
     }
 
     protected virtual void OnDispose()
     {
+        AppEvents.OnChangeRedo -= AppEvents_OnChangeRedo;
+        AppEvents.OnChangeUndo -= AppEvents_OnChangeUndo;
+        AppEvents.OnChangeAdded -= AppEvents_OnChangeAdded;
+
         AppEvents.OnAppStateChanged -= AppEvents_OnAppStateChanged;
         AppEvents.OnDiagramContainerChanged -= AppEvents_OnDiagramContainerChanged;
+    }
+
+    private void SetGrid(bool? gridLines)
+    {
+        AppState.GridLines = gridLines;
+        AppEvents.FireVisualChanged(this);
+    }
+
+    private void SetGridSize(double size)
+    {
+        AppState.GridSize = size;
+        AppEvents.FireVisualChanged(this);
     }
 
     private void AppEvents_OnAppStateChanged(object? sender, EventArgs e)
@@ -35,6 +56,21 @@ public partial class MainLayout : IDisposable
     private void AppEvents_OnDiagramContainerChanged(object? sender, Rectangle? arg)
     {
         _diagramContainer = arg;
+        StateHasChanged();
+    }
+
+    private void AppEvents_OnChangeRedo(object? sender, AppChanges.Change e)
+    {
+        StateHasChanged();
+    }
+
+    private void AppEvents_OnChangeUndo(object? sender, AppChanges.Change e)
+    {
+        StateHasChanged();
+    }
+
+    private void AppEvents_OnChangeAdded(object? sender, AppChanges.Change e)
+    {
         StateHasChanged();
     }
 
@@ -57,8 +93,8 @@ public partial class MainLayout : IDisposable
                 }
             }
         },
-        AppState.EntityDetailsPoint,
-        AppState.EntityDetailsSize);
+        initPoint: null, //AppState.EntityDetailsPoint,
+        initSize: AppState.EntityDetailsSize);
     }
 
     private void NewRelationship()

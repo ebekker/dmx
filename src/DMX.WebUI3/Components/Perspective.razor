@@ -1,6 +1,30 @@
-﻿@using Blazor.Diagrams.Components
-<div class="diagram-container" style="width: 100%; height: 100%;">
+﻿<div class="diagram-container" style="width: 100%; height: 100%;">
     <CascadingValue Value="Diagram" IsFixed="true">
-        <DiagramCanvas></DiagramCanvas>
+        <DiagramCanvas>
+            <AdditionalSvg>
+                @if (AppState.OriginMarkerColor != null)
+                {
+                    <g class="originMarker">
+                        <circle cx="0" cy="0" r=@(AppState.GridSize)
+                                stroke="rgb(128, 128, 128, 0.2)"
+                                fill="rgb(178, 178, 178, 0.2)" />
+                        <line x1="0" y1=@(-AppState.GridSize) x2="0" y2=@(AppState.GridSize)
+                              stroke=@AppState.OriginMarkerColor
+                              stroke-width="2" />
+                        <line x1=@(-AppState.GridSize) y1="0" x2=@(AppState.GridSize) y2="0"
+                              stroke=@AppState.OriginMarkerColor
+                              stroke-width="2" />
+                    </g>
+                }
+            </AdditionalSvg>
+            <Widgets>
+                <SelectionBoxWidget />
+                @if (_gridLines != null)
+                {
+                    <GridWidget Size=@(_gridSize) BackgroundColor="rgb(250 250 250)"
+                                Mode=@(_gridLines.Value ? GridMode.Line : GridMode.Point) />
+                }
+            </Widgets>
+        </DiagramCanvas>
     </CascadingValue>
 </div>

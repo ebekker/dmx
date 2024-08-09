@@ -1,14 +1,16 @@
 ﻿// DMX.
 // Copyright (C) Eugene Bekker.
 
+using DMX.AppDB.Models;
+
 namespace DMX.WebUI3.Components;
 
 /// <summary>
-/// Defines the a dialog box for editing an Entity's details.
+/// Defines the a dialog box for editing a Relationship's details.
 /// </summary>
-public partial class EntityDetails : IDisposable
+public partial class RelationshipDetails : IDisposable
 {
-    [Parameter] public DmxEntity Entity { get; set; } = default!;
+    [Parameter] public DmxRelationship Relationship { get; set; } = default!;
     [Parameter] public AppSignal<DPoint>? DragSignal { get; set; }
     [Parameter] public AppSignal<DSize>? ResizeSignal { get; set; }
 
@@ -35,20 +37,20 @@ public partial class EntityDetails : IDisposable
     private void DragSignal_OnSignal(object? sender, DPoint arg)
     {
         // Do we want to save position?
-        AppState.EntityDetailsPoint = arg;
+        AppState.RelationshipDetailsPoint = arg;
         AppEvents.FireAppStateChanged(sender ?? this);
     }
 
     private void ResizeSignal_OnSignal(object? sender, DSize arg)
     {
-        AppState.EntityDetailsSize = arg;
+        AppState.RelationshipDetailsSize = arg;
         AppEvents.FireAppStateChanged(sender ?? this);
     }
 
 
     string? columnEditing;
 
-    bool IsEditing(string columnName, DmxAttribute att)
+    bool IsEditing(string columnName, DmxRelationshipPair att)
     {
         // Comparing strings is quicker than checking the
         // contents of a List, so let the property check fail first.
@@ -65,7 +67,7 @@ public partial class EntityDetails : IDisposable
         return string.Empty;
     }
 
-    void OnCellClick(DataGridCellMouseEventArgs<DmxAttribute> args)
+    void OnCellClick(DataGridCellMouseEventArgs<DmxRelationshipPair> args)
     {
         //// Record the previous edited field, if you're not using IRevertibleChangeTracking to track object changes
         //if (ordersToUpdate.Any())
@@ -86,14 +88,14 @@ public partial class EntityDetails : IDisposable
         //EditRow(args.Data);
     }
 
-    void EditRow(DmxAttribute att)
+    void EditRow(DmxRelationshipPair att)
     {
         //Reset();
 
         //ordersToUpdate.Add(order);
     }
 
-    void OnUpdateRow(DmxAttribute att)
+    void OnUpdateRow(DmxRelationshipPair att)
     {
         //Reset(order);
 
@@ -107,14 +109,14 @@ public partial class EntityDetails : IDisposable
         //editedFields = editedFields.Where(c => c.Key != order.OrderID).ToList();
     }
 
-    public static async Task<bool?> ShowAsync(DialogService dlg, DmxEntity entity,
+    public static async Task<bool?> ShowAsync(DialogService dlg, DmxRelationship relationship,
         DPoint? initPoint = null, DSize? initSize = null)
     {
         var dragSignal = new AppSignal<DPoint>();
         var resizeSignal = new AppSignal<DSize>();
         var @params = new Dictionary<string, object>
         {
-            [nameof(Entity)] = entity,
+            [nameof(Relationship)] = relationship,
             [nameof(DragSignal)] = dragSignal,
             [nameof(ResizeSignal)] = resizeSignal,
         };
@@ -136,8 +138,8 @@ public partial class EntityDetails : IDisposable
             opts.Height = initSize.Value.Height + "px";
         }
 
-        var result = (bool?)await dlg.OpenAsync<EntityDetails>(
-            $"Entity '{entity.Name}'", @params, opts);
+        var result = (bool?)await dlg.OpenAsync<RelationshipDetails>(
+            $"Relationship '{relationship.Name}'", @params, opts);
 
         return result;
     }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 
 namespace DMX.AppDB.Models;
-internal class DmxShape
+public class DmxShape
 {
     public virtual Guid Id { get; set; }
 
@@ -15,8 +15,8 @@ internal class DmxShape
 
     // Visual Stuff
     public virtual int? PosX { get; set; }
-    public virtual int? PoxY { get; set; }
-    public virtual int? PosZ { get; set; } // Order within layer
+    public virtual int? PosY { get; set; }
+    public virtual int? ZOrder { get; set; } // Order within layer
 
     public virtual int? DimW { get; set; }
     public virtual int? DimH { get; set; }

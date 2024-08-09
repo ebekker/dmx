@@ -1,0 +1,34 @@
+﻿<style>
+    .dlgbody {
+        Xborder: solid 1px red;
+        margin: 0px;
+        height: 100%;
+        display: grid !important;
+        grid-template-rows: auto 40px;
+    }
+
+    .rz-dialog-content {
+        Xborder: solid 1px green;
+        margin: 0;
+        padding: 5px;
+        height: 100%;
+    }
+
+    .dlgtabs .rz-tabview-panel {
+        padding: 3px;
+    }
+
+    .dlgbuttons {
+        Xborder: 1px dotted pink;
+        grid-row: 2;
+    }
+</style>
+
+<RadzenStack class="dlgbody">
+    @DialogBody
+    <RadzenStack class="dlgbuttons" Orientation="Orientation.Horizontal"
+                 Gap="0.5rem" AlignItems="AlignItems.Center" Style=""
+                 JustifyContent="JustifyContent.SpaceBetween">
+        @DialogButtons
+    </RadzenStack>
+</RadzenStack>

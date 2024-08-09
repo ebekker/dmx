@@ -21,11 +21,18 @@ public class DmxEntity
 
     public virtual List<DmxAttribute> Attributes { get; set; } = default!;
 
+    public virtual List<DmxRelationship> RelationshipsAsChild { get; set; } = default!;
+    public virtual List<DmxRelationship> RelationshipsAsParent { get; set; } = default!;
+
     internal class ModelConfig : IEntityTypeConfiguration<DmxEntity>
     {
         public void Configure(EntityTypeBuilder<DmxEntity> builder)
         {
             builder.ToTable("ent");
+            builder.HasMany(x => x.RelationshipsAsChild)
+                .WithOne(x => x.Child);
+            builder.HasMany(x => x.RelationshipsAsParent)
+                .WithOne(x => x.Parent);
         }
     }
 }

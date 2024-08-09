@@ -2,8 +2,9 @@
 
 <RadzenLayout style="position: relative;">
     <RadzenHeader>
-        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0">
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="5">
             <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+
             <RadzenMenu Click="OnParentClicked">
                 <RadzenMenuItem Text="General" Icon="home">
                     <RadzenMenuItem Text="Buttons" Icon="account_circle"></RadzenMenuItem>
@@ -11,6 +12,20 @@
                     <RadzenMenuItem Text="ChildClick"   Icon="attach_file" Click="OnChildClicked" Disabled="true"></RadzenMenuItem>
                     <RadzenMenuItem Text="Dialog" Icon="perm_media"></RadzenMenuItem>
                     <RadzenMenuItem Text="Notification" Icon="announcement"></RadzenMenuItem>
+                </RadzenMenuItem>
+                <RadzenMenuItem Text="View" Icon="desktop_windows">
+                    <RadzenMenuItem Text="Grid">
+                        <RadzenMenuItem Text="None" Click=@(_ => SetGrid(null))
+                                        Icon=@(AppState.GridLines == null ? "radio_button_checked" : "radio_button_unchecked") />
+                        <RadzenMenuItem Text="Points" Click=@(_ => SetGrid(false))
+                                        Icon=@(AppState.GridLines == false ? "radio_button_checked" : "radio_button_unchecked") />
+                        <RadzenMenuItem Text="Lines" Click=@(_ => SetGrid(true))
+                                        Icon=@(AppState.GridLines == true ? "radio_button_checked" : "radio_button_unchecked") />
+                        <RadzenMenuItem>
+                            <Template>
+                            </Template>
+                        </RadzenMenuItem>
+                    </RadzenMenuItem>
                 </RadzenMenuItem>
                 <RadzenMenuItem Text="Inputs" Icon="payment" Disabled="true">
                     <RadzenMenuItem Text="CheckBox" Icon="check_circle"></RadzenMenuItem>
@@ -43,6 +58,17 @@
                     <RadzenSelectBarItem Icon="pan_tool" Value=@(4) />
                 </Items>
             </RadzenSelectBar>
+
+            <RadzenStack Orientation=@(Orientation.Horizontal) Gap="0">
+                <RadzenButton Icon="undo" Disabled=@(AppChanges.IsUndoEmpty)
+                              title=@(AppChanges.UndoLabel)
+                              Click=@(AppChanges.ApplyUndo)
+                              ButtonStyle=@(ButtonStyle.Light) />
+                <RadzenButton Icon="redo" Disabled=@(AppChanges.IsRedoEmpty)
+                              title=@(AppChanges.RedoLabel)
+                              Click=@(AppChanges.ApplyRedo)
+                              ButtonStyle=@(ButtonStyle.Light) />
+            </RadzenStack>
         </RadzenStack>
     </RadzenHeader>
     <RadzenSidebar Responsive="false" @bind-Expanded="@sidebarExpanded" style="position: absolute">

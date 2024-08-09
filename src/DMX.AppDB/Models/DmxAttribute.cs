@@ -21,6 +21,8 @@ public class DmxAttribute
     public virtual bool IsPrimaryKey { get; set; }
     public virtual bool IsRequired { get; set; }
 
+    public virtual int SortOrder { get; set; } = 0;
+
     internal class ModelConfig : IEntityTypeConfiguration<DmxAttribute>
     {
         public void Configure(EntityTypeBuilder<DmxAttribute> builder)

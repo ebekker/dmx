@@ -1,0 +1,39 @@
+﻿
+<RadzenStack class="dlgbody">
+    <RadzenTabs class="dlgtabs">
+        <Tabs>
+            <RadzenTabsItem Text="General">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="3px"
+                             class="fullsize">
+                    <RadzenFormField Text="Name">
+                        <RadzenTextBox @bind-Value=@(Domain.Name) />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Description">
+                        <RadzenTextArea @bind-Value=@(Domain.Description) />
+                    </RadzenFormField>
+                </RadzenStack>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Memo">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="3px"
+                             class="fullsize">
+                    <RadzenTextArea @bind-Value=@(Domain.Memo)
+                                    class="noresize fullsize" />
+                </RadzenStack>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+    <RadzenStack class="dlgbuttons" Orientation="Orientation.Horizontal"
+                 Gap="0.5rem" AlignItems="AlignItems.Center" Style=""
+                 JustifyContent="JustifyContent.SpaceBetween">
+        @*
+        <RadzenButton Text="Refresh" Click=@(() => StateHasChanged())
+                      ButtonStyle="ButtonStyle.Light" />
+                      *@
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenButton Text="Ok" Style="width: 80px;"
+                          Click="() => DialogSvc.Close(true)" />
+            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light"
+                          Click="() => DialogSvc.Close(false)" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenStack>

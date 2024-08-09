@@ -11,44 +11,87 @@
 
 <RadzenSplitter Orientation="Orientation.Horizontal" Style="border: dashed 1px pink; margin: 0px; height: 100%;">
     <RadzenSplitterPane Size="200px" Min="100px" Style="overflow: scroll;">
-        <RadzenTree Style="width: 100%; height: 300px">
+        <RadzenTree Style="width: 100%; height: calc(100% - 10px);">
             <RadzenTreeItem Text="Domains" Data="_doms" HasChildren=@(_doms.Count > 0)>
-                @foreach (var e in _doms)
+                @foreach (var d in _doms)
                 {
-                    <RadzenTreeItem Text=@(e.Name) />
+                    <RadzenTreeItem Text=@(d.Name)
+                                    @ondblclick=@(x => EditDomain(d)) />
                 }
             </RadzenTreeItem>
             <RadzenTreeItem Text="Entities" Data="_ents" HasChildren=@(_ents.Count > 0)>
                 @foreach (var e in _ents)
                 {
-                    <RadzenTreeItem Text=@(e.Name) />
+                    <RadzenTreeItem Text=@(e.Name)
+                                    @ondblclick=@(x => EditEntity(e)) />
                 }
             </RadzenTreeItem>
             <RadzenTreeItem Text="Relationships" Data="_rels" HasChildren=@(_rels.Count > 0)>
                 @foreach (var r in _rels)
                 {
-                    <RadzenTreeItem Text=@(r.Name) />
+                    <RadzenTreeItem Text=@(r.Name)
+                                    @ondblclick=@(x => EditRelationship(r)) />
                 }
             </RadzenTreeItem>
         </RadzenTree>
     </RadzenSplitterPane>
     <RadzenSplitterPane Style="padding-bottom: 5px;">
-        <RadzenTabs id="main-tabs" TabPosition="TabPosition.Bottom" Style="height: 100%;">
-            <Tabs>
-                <RadzenTabsItem Text="Perspective1">
-                    <Perspective />
-                </RadzenTabsItem>
-                <RadzenTabsItem Text="Visual Test">
-                    <Template>
-                        [@context.Text]
-                    </Template>
-                    <ChildContent>
-                        <div style="border: dashed green 1px; width: 100%; height: 100%;">
-                            SAMPLE
-                        </div>
-                    </ChildContent>
-                </RadzenTabsItem>
-            </Tabs>
-        </RadzenTabs>
+        <RadzenStack Orientation=@(Orientation.Vertical) class="fullsize" Gap="1">
+            <RadzenStack Orientation=@(Orientation.Horizontal) Gap="1rem" Style="margin: 1px;">
+                <RadzenStack Orientation=@(Orientation.Horizontal) Gap="1">
+                    <RadzenToggleButton @bind-Value=@(OriginMarkerEnabled) Icon="my_location"
+                                        @bind-Value:after=@(() => AppEvents.FireVisualChanged(this))
+                                        title="toggle origin marker"
+                                        ButtonStyle="ButtonStyle.Light"
+                                        ToggleButtonStyle="ButtonStyle.Secondary" ToggleShade="Shade.Darker" />
+                    <RadzenButton Icon="recenter" title="reset to origin" ButtonStyle="ButtonStyle.Secondary"
+                                  Click=@(_ => AppEvents.FireResetToOrigin(this)) />
+                </RadzenStack>
+                <RadzenSelectBar @bind-Value=@(AppState.GridLines) class="btn-tight-sides"
+                                 @bind-Value:after=@(() => AppEvents.FireVisualChanged(this))>
+                    <Items>
+                        <RadzenSelectBarItem Value=@(null) Icon="grid_off"
+                                             ImageAlternateText="grid off" title="grid off" />
+                        <RadzenSelectBarItem Value=@(true) Icon="grid_on"
+                                             ImageAlternateText="grid lines on" title="grid lines on" />
+                        <RadzenSelectBarItem Value=@(false) Icon="background_dot_small"
+                                             ImageAlternateText="grid dots on" title="gird dots on" />
+                    </Items>
+                </RadzenSelectBar>
+                <RadzenNumeric @bind-Value=@(AppState.GridSize) Style="width: 3.5rem; height: 100%;"
+                               @bind-Value:after=@(() => AppEvents.FireVisualChanged(this))
+                               Disabled=@(AppState.GridLines == null) title="grid size"
+                               Min="5" Max="100" />
+
+                <RadzenStack Orientation=@(Orientation.Horizontal) Gap="1">
+                    <RadzenButton Icon="flip_to_back" title="lower to back" Disabled=@true
+                                  ButtonStyle="ButtonStyle.Light" />
+                    <RadzenButton Icon="stat_minus_2" title="lower" Disabled=@true
+                                  ButtonStyle="ButtonStyle.Light" />
+                    <RadzenButton Icon="stat_2" title="raise" Disabled=@true
+                                  ButtonStyle="ButtonStyle.Light" />
+                    <RadzenButton Icon="flip_to_front" title="raise to front" Disabled=@true
+                                  ButtonStyle="ButtonStyle.Light" />
+                </RadzenStack>
+
+            </RadzenStack>
+            <RadzenTabs id="main-tabs" TabPosition="TabPosition.Bottom" Style="height: 100%;">
+                <Tabs>
+                    <RadzenTabsItem Text="Perspective1">
+                        <Perspective />
+                    </RadzenTabsItem>
+                    <RadzenTabsItem Text="Visual Test">
+                        <Template>
+                            [@context.Text]
+                        </Template>
+                        <ChildContent>
+                            <div style="border: dashed green 1px; width: 100%; height: 100%;">
+                                SAMPLE
+                            </div>
+                        </ChildContent>
+                    </RadzenTabsItem>
+                </Tabs>
+            </RadzenTabs>
+        </RadzenStack>
     </RadzenSplitterPane>
 </RadzenSplitter>

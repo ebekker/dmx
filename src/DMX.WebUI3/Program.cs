@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace DMX.WebUI3;
 
-public class Program
+public partial class Program
 {
     public static async Task Main(string[] args)
     {
@@ -16,7 +16,8 @@ public class Program
 
         // Add services to the container.
 
-        builder.Services.AddOptions<AppConfig>();
+        builder.Services.AddOptions<AppConfig>().Bind(
+            builder.Configuration.GetSection(AppConfig.DefaultSectionName));
 
         builder.Services.AddDbContextFactory<AppDbContext>((services, optionsBuilder) =>
         {
@@ -30,13 +31,15 @@ public class Program
 
         builder.Services.AddScoped<AppState>();
         builder.Services.AddScoped<AppEvents>();
+        builder.Services.AddScoped<AppChanges>();
+        builder.Services.AddScoped<DbContextChangeBuilder>();
 
         var app = builder.Build();
         var log = app.Services.GetRequiredService<ILogger<Program>>();
         var cfg = app.Services.GetRequiredService<IOptions<AppConfig>>().Value;
         var dbf = app.Services.GetRequiredService<IDbContextFactory<AppDbContext>>();
 
-        if (cfg.ApplyMigration)
+        if (cfg.ApplyMigrations)
         {
             log.LogInformation("Migration requested...");
             using var db = await dbf.CreateDbContextAsync();
@@ -44,7 +47,7 @@ public class Program
             await db.Database.MigrateAsync();
             log.LogInformation("...migration completed.");
         }
-        else if (cfg.SkipMigrationCheck)
+        else if (cfg.SkipMigrationsCheck)
         {
             log.LogInformation("SKIPPING migration check");
         }
@@ -61,6 +64,13 @@ public class Program
                 return;
             }
             log.LogInformation("...no pending migrations found");
+        }
+
+        if (cfg.PopulateTestModel)
+        {
+            log.LogWarning("Requested to populate test model data...");
+            using var db = await dbf.CreateDbContextAsync();
+            await PopulateTestModel(db);
         }
 
         // Configure the HTTP request pipeline.
@@ -80,6 +90,15 @@ public class Program
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
 
-        await app.RunAsync();
+        if (cfg.SkipProgramRun)
+
+        {
+            log.LogWarning("Program Run skip requested");
+        }
+        else
+        {
+            log.LogInformation("Program Running...");
+            await app.RunAsync();
+        }
     }
 }

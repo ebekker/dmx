@@ -1,0 +1,122 @@
+﻿@using Blazor.Diagrams.Components.Renderers;
+@implements IDisposable
+<div class=@("entity-card " + (_isDepEntity ? "depchild" : ""))>
+    <div class="entity-name">@Node.Entity.Name</div>
+    <div class="attrs">
+        <div class="attrs-pk">
+            @if (_pks != null)
+            @foreach (var a in _pks)
+            {
+                <div class="attr-entry">
+                    <RadzenStack Orientation=@Orientation.Horizontal Gap="15px"
+                                 JustifyContent=@JustifyContent.SpaceBetween>
+                        <RadzenStack Orientation=@Orientation.Horizontal Gap="3px">
+                            <RadzenIcon Icon=@(IconFor(a)) IconColor="#880" />
+                            <RadzenText class="pk-name">@a.Name</RadzenText>
+                        </RadzenStack>
+                        <RadzenText>@a.Domain?.Name</RadzenText>
+                    </RadzenStack>
+                </div>
+            }
+        </div>
+        <div class="attrs-npk">
+            @if (_npks != null)
+            @foreach (var a in _npks)
+            {
+                <div class=@("attr-entry " + (a.IsRequired ? "attr-required" : ""))>
+                    <RadzenStack Orientation=@Orientation.Horizontal Gap="15px"
+                                 JustifyContent=@JustifyContent.SpaceBetween>
+                        <RadzenStack Orientation=@Orientation.Horizontal Gap="3px">
+                            <RadzenIcon Icon=@(IconFor(a)) />
+                            <RadzenText class="npk-name">@a.Name</RadzenText>
+                        </RadzenStack>
+                        <RadzenText>@a.Domain?.Name</RadzenText>
+                    </RadzenStack>
+                </div>
+            }
+        </div>
+
+    </div>
+
+    @foreach (var port in Node.Ports)
+    {
+        // In case you have any ports to show
+        // IMPORTANT: You are always in charge of rendering ports
+        <PortRenderer @key="port" Port="port" />
+    }
+
+</div>
+
+@code {
+    // This gets filled by the library -- Name is Important
+    [Parameter] public EntityNodeModel Node { get; set; } = null!;
+
+    bool _isDepEntity = false;
+    List<DmxAttribute>? _all;
+    List<DmxAttribute>? _pks;
+    List<DmxAttribute>? _npks;
+    List<DmxAttribute>? _fks;
+
+    protected override void OnInitialized()
+    {
+        Node.OnUpdate += Node_OnUpdate;
+        ComputeDetails();
+    }
+
+    public void Dispose()
+    {
+        Node.OnUpdate -= Node_OnUpdate;
+    }
+
+    void ComputeDetails()
+    {
+        _all = new();
+        _pks = new();
+        _npks = new();
+        _fks = new();
+        foreach (var a in Node.Entity.Attributes.OrderBy(x => x.SortOrder))
+        {
+            _all.Add(a);
+            if (a.IsPrimaryKey)
+                _pks.Add(a);
+            else
+                _npks.Add(a);
+        }
+
+        foreach (var r in Node.Entity.RelationshipsAsChild)
+        {
+            foreach (var a in r.Attributes)
+            {
+                _fks.Add(a.Child);
+            }
+        }
+
+        _isDepEntity = _pks.Intersect(_fks).Any();
+    }
+
+    void Node_OnUpdate(object? sender, EventArgs args)
+    {
+        ComputeDetails();
+    }
+
+    const string IconFK = "vpn_key"; // "key_vertical"; // 
+    const string IconFKRequired = "vpn_key_alert";
+    const string IconPK = "key_vertical"; // key"; // 
+    const string IconPKFK = "vpn_key"; // key"; // 
+    const string IconRequired = "exclamation"; // "priority_high"; // "radio_button_checked"; // 
+
+    string IconFor(DmxAttribute att)
+    {
+        return (_fks?.Contains(att) ?? false)
+            ? att.IsPrimaryKey
+                ? IconPKFK
+                : att.IsRequired
+                    ? IconFKRequired
+                    : IconFK
+            : att.IsPrimaryKey
+                ? IconPK
+                : att.IsRequired
+                    ? IconRequired
+                    : string.Empty;
+    }
+}
