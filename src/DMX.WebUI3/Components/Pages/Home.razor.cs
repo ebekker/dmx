@@ -109,10 +109,12 @@ public partial class Home : IDisposable
             initSize: AppState.DomainDetailsSize);
 
         var change = ChangeBuilder.Build(db);
+        if (change == null)
+            return;
 
         if (result ?? false)
         {
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             AppChanges.Push(change);
             AppEvents.FireDataModelChanged(this);
         }
@@ -247,17 +249,20 @@ public partial class Home : IDisposable
         db.Attach(e);
         var result = await EntityDetails.ShowAsync(DialogSvc, e,
             initPoint: null, //AppState.EntityDetailsPoint,
-            initSize: AppState.EntityDetailsSize);
+            initSize: AppState.EntityDetailsSize)
+            ?? DetailsResult.Cancel;
 
         var change = ChangeBuilder.Build(db);
+        if (change == null)
+            return;
 
-        if (result ?? false)
+        if (result == DetailsResult.OK)
         {
-            db.SaveChanges();
+            await db.SaveChangesAsync();
             AppChanges.Push(change);
             AppEvents.FireDataModelChanged(this);
         }
-        else
+        else // Assume DetailsResult.Cancel
         {
             await change.Undo();
         }
@@ -272,6 +277,8 @@ public partial class Home : IDisposable
             initSize: AppState.RelationshipDetailsSize);
 
         var change = ChangeBuilder.Build(db);
+        if (change == null)
+            return;
 
         if (result ?? false)
         {

@@ -1,0 +1,48 @@
+﻿<RadzenStack class="dlgbody">
+    <RadzenTabs class="dlgtabs" Style="grid-row: 1;">
+        <Tabs>
+            <RadzenTabsItem Text="General">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="3px"
+                             class="fullsize">
+                    <RadzenFormField Text="Name">
+                        <RadzenTextBox @bind-Value=@Attribute.Name />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Domain">
+                        <RadzenDropDown TValue="DmxDomain"
+                                        Data="_domains"
+                                        @bind-Value=@(Attribute.Domain)
+                                        AllowClear="@true">
+                            <Template>@context.Name</Template>
+                        </RadzenDropDown>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Description">
+                        <RadzenTextArea @bind-Value=@Attribute.Description />
+                    </RadzenFormField>
+                </RadzenStack>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Memo" Style="height: 100%;">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="3px"
+                             class="fullsize">
+                    <RadzenTextArea @bind-Value=@(Attribute.Memo)
+                                    class="noresize fullsize" />
+                </RadzenStack>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+    <RadzenStack class="dlgbuttons" Orientation="Orientation.Horizontal"
+                 Gap="0.5rem" AlignItems="AlignItems.Center" Style=""
+                 JustifyContent="JustifyContent.SpaceBetween">
+        @*
+        <RadzenButton Text="Refresh" Click=@(() => StateHasChanged())
+                      ButtonStyle="ButtonStyle.Light" />
+        *@
+        <RadzenButton Text="Delete" Click=@(() => DialogSvc.Close(DetailsResult.Delete))
+                      ButtonStyle="ButtonStyle.Light" />
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenButton Text="Ok" Style="width: 80px;"
+                          Click="() => DialogSvc.Close(DetailsResult.OK)" />
+            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light"
+                          Click="() => DialogSvc.Close(DetailsResult.Cancel)" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenStack>

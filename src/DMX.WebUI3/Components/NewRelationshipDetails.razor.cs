@@ -2,34 +2,49 @@
 // Copyright (C) Eugene Bekker.
 
 using DMX.AppDB;
-using DMX.WebUI3.Components.Layout;
 using Microsoft.EntityFrameworkCore;
 
 namespace DMX.WebUI3.Components;
 
-/// <summary>
-/// Defines the a dialog box for editing an Entity's details.
-/// </summary>
-public partial class EntityDetails : IDisposable
+public partial class NewRelationshipDetails : IDisposable
 {
-    [Parameter] public DmxEntity Entity { get; set; } = default!;
+    [Parameter] public AppDbContext DB { get; set; } = default!;
+    [Parameter] public DmxRelationship Relationship { get; set; } = default!;
     [Parameter] public AppSignal<DPoint>? DragSignal { get; set; }
     [Parameter] public AppSignal<DSize>? ResizeSignal { get; set; }
 
-    [Inject] private IDbContextFactory<AppDbContext> DbFactory { get; set; } = default!;
     [Inject] private DialogService DialogSvc { get; set; } = default!;
     [Inject] private AppState AppState { get; set; } = default!;
     [Inject] private AppEvents AppEvents { get; set; } = default!;
-    [Inject] private DbContextChangeBuilder ChangeBuilder { get; set; } = default!;
 
-    RadzenDataGrid<DmxAttribute>? _attrGrid;
+    List<DmxEntity>? _entities;
+    List<string>? _allRelNames;
+    DmxEntity? _parent;
+    DmxEntity? _child;
+    string? _suggestedName;
+    readonly List<RelPair> _relPairs = new();
 
-    protected override void OnInitialized()
+    class RelPair
+    {
+        public required DmxAttribute Parent { get; init; }
+        public DmxAttribute? Child { get; set; }
+        public string? NewChild { get; set; }
+    }
+
+    protected override async Task OnInitializedAsync()
     {
         if (DragSignal != null)
             DragSignal.OnSignal += DragSignal_OnSignal;
         if (ResizeSignal != null)
             ResizeSignal.OnSignal += ResizeSignal_OnSignal;
+
+        _entities = await DB.Entities
+            .Include(x => x.Attributes)
+                .ThenInclude(x => x.Domain)
+            .ToListAsync();
+        _allRelNames = await DB.Relationships
+            .Select(x => x.Name)
+            .ToListAsync();
     }
 
     public void Dispose()
@@ -40,24 +55,107 @@ public partial class EntityDetails : IDisposable
             ResizeSignal.OnSignal -= ResizeSignal_OnSignal;
     }
 
+    void DoOK()
+    {
+        if (_parent == null || _child == null)
+            return;
+
+        Relationship.Parent = _parent;
+        Relationship.Child = _child;
+        Relationship.Attributes ??= new();
+
+        foreach (var rp in _relPairs)
+        {
+            var ca = rp.Child;
+            if (ca == null)
+            {
+                ca = new()
+                {
+                    Entity = _child,
+                    Name = rp.NewChild ?? "NewAtt",
+                    Domain = rp.Parent.Domain,
+                };
+                _child.Attributes ??= new();
+                _child.Attributes.Add(ca);
+            }
+
+            var relPair = new DmxRelationshipPair
+            {
+                Relationship = Relationship,
+                Parent = rp.Parent,
+                Child = ca,
+            };
+            Relationship.Attributes.Add(relPair);
+        }
+
+        DialogSvc.Close(true);
+    }
+
+    void UpdateName()
+    {
+        if (_parent != null && _child != null)
+        {
+            var oldSName = _suggestedName;
+            _suggestedName = $"{_child.Name}{_parent.Name}";
+            _suggestedName = ModelTool.NextAvailableName(_allRelNames!, _suggestedName, start: null);
+            if (string.IsNullOrWhiteSpace(Relationship.Name)
+                || string.Equals(Relationship.Name, oldSName))
+            {
+                Relationship.Name = _suggestedName;
+            }
+        }
+    }
+
+    void AfterParentUpdate()
+    {
+        _relPairs.Clear();
+        if (_parent != null)
+        {
+            foreach (var a in _parent.Attributes.Where(x => x.IsPrimaryKey))
+            {
+                _relPairs.Add(new()
+                {
+                    Parent = a,
+                });
+            }
+            AfterChildUpdate();
+        }
+    }
+
+    void AfterChildUpdate()
+    {
+        if (_parent != null && _child != null)
+        {
+            var childNames = _child.Attributes
+                .Select(x => x.Name)
+                .ToList();
+
+            foreach (var rp in _relPairs)
+            {
+                rp.NewChild = ModelTool.NextAvailableName(childNames,
+                    rp.Parent.Name, start: null);
+            }
+            UpdateName();
+        }
+    }
+
     private void DragSignal_OnSignal(object? sender, DPoint arg)
     {
         // Do we want to save position?
-        AppState.EntityDetailsPoint = arg;
+        AppState.RelationshipDetailsPoint = arg;
         AppEvents.FireAppStateChanged(sender ?? this);
     }
 
     private void ResizeSignal_OnSignal(object? sender, DSize arg)
     {
-        AppState.EntityDetailsSize = arg;
+        AppState.RelationshipDetailsSize = arg;
         AppEvents.FireAppStateChanged(sender ?? this);
     }
 
 
-    IList<DmxAttribute>? _selectedAttributes;
     string? columnEditing;
 
-    bool IsEditing(string columnName, DmxAttribute att)
+    bool IsEditing(string columnName, DmxRelationshipPair att)
     {
         // Comparing strings is quicker than checking the
         // contents of a List, so let the property check fail first.
@@ -74,7 +172,7 @@ public partial class EntityDetails : IDisposable
         return string.Empty;
     }
 
-    void OnCellClick(DataGridCellMouseEventArgs<DmxAttribute> args)
+    void OnCellClick(DataGridCellMouseEventArgs<DmxRelationshipPair> args)
     {
         //// Record the previous edited field, if you're not using IRevertibleChangeTracking to track object changes
         //if (ordersToUpdate.Any())
@@ -95,14 +193,14 @@ public partial class EntityDetails : IDisposable
         //EditRow(args.Data);
     }
 
-    void EditRow(DmxAttribute att)
+    void EditRow(DmxRelationshipPair att)
     {
         //Reset();
 
         //ordersToUpdate.Add(order);
     }
 
-    void OnUpdateRow(DmxAttribute att)
+    void OnUpdateRow(DmxRelationshipPair att)
     {
         //Reset(order);
 
@@ -116,67 +214,16 @@ public partial class EntityDetails : IDisposable
         //editedFields = editedFields.Where(c => c.Key != order.OrderID).ToList();
     }
 
-    async Task EditAttr(DmxAttribute? attr = null)
-    {
-        using var db = await DbFactory.CreateDbContextAsync();
-
-        var a = attr;
-        db.Attach(Entity);
-        if (a != null)
-        {
-            db.Attach(a);
-        }
-        else
-        {
-            Entity.Attributes ??= new();
-            var allAttrNames = Entity.Attributes
-                .Select(x => x.Name).ToList();
-            a = new()
-            {
-                Name = ModelTool.NextAvailableName(allAttrNames, "Attr"),
-                Entity = Entity,
-            };
-        }
-
-        var result = await AttributeDetails.ShowAsync(DialogSvc, a,
-            initPoint: null,
-            initSize: AppState.AttributeDetailsSize)
-            ?? DetailsResult.Cancel;
-
-        if (result == DetailsResult.OK)
-        {
-            if (attr == null)
-            {
-                Entity.Attributes.Add(a);
-            }
-            await _attrGrid!.Reload();
-            return;
-        }
-        else if (result == DetailsResult.Delete)
-        {
-            if (attr != null)
-            {
-                ModelTool.RemoveAttribute(db, Entity, attr);
-                return;
-            }
-        }
-        // Assume DetailsResult.Cancel
-        else if (attr != null)
-        {
-            var change = ChangeBuilder.Build(db);
-            if (change != null)
-                await change.Undo();
-        }
-    }
-
-    public static async Task<DetailsResult?> ShowAsync(DialogService dlg, DmxEntity entity,
+    public static async Task<bool?> ShowAsync(DialogService dlg,
+        AppDbContext db, DmxRelationship relationship,
         DPoint? initPoint = null, DSize? initSize = null)
     {
         var dragSignal = new AppSignal<DPoint>();
         var resizeSignal = new AppSignal<DSize>();
         var @params = new Dictionary<string, object>
         {
-            [nameof(Entity)] = entity,
+            [nameof(DB)] = db,
+            [nameof(Relationship)] = relationship,
             [nameof(DragSignal)] = dragSignal,
             [nameof(ResizeSignal)] = resizeSignal,
         };
@@ -198,8 +245,8 @@ public partial class EntityDetails : IDisposable
             opts.Height = initSize.Value.Height + "px";
         }
 
-        var result = (DetailsResult?)await dlg.OpenAsync<EntityDetails>(
-            $"Entity '{entity.Name}'", @params, opts);
+        var result = (bool?)await dlg.OpenAsync<NewRelationshipDetails>(
+            "New Relationship", @params, opts);
 
         return result;
     }

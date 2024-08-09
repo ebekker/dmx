@@ -24,13 +24,16 @@ public class DbContextChangeBuilder
         _changes = changes;
     }
 
-    public AppChanges.Change Build(AppDbContext trackedChanges, string? label = null)
+    public AppChanges.Change? Build(AppDbContext trackedChanges, string? label = null)
     {
+        if (!trackedChanges.ChangeTracker.HasChanges())
+            return null;
+
         label ??= "data model changes";
 
         var undoAdd = new List<object>();
         var undoDel = new List<object>();
-        var undoMod = new List<(object ent, Dictionary<PropertyInfo, (object? oldVal, object? newVal)> modProps)>();
+        var undoMod = new List<(object ent, Dictionary<string, (object? oldVal, object? newVal)> modProps)>();
 
         foreach (var ent in trackedChanges.ChangeTracker.Entries())
         {
@@ -44,15 +47,14 @@ public class DbContextChangeBuilder
             }
             else if (ent.State == EntityState.Modified)
             {
-                var modProps = new Dictionary<PropertyInfo, (object? oldVal, object? newVal)>();
+                Console.WriteLine("Computing modified props:");
+                var modProps = new Dictionary<string, (object? oldVal, object? newVal)>();
                 foreach (var p in ent.Properties)
                 {
                     if (!p.IsModified)
                         continue;
-                    var pi = p.Metadata.PropertyInfo;
-                    if (pi == null)
-                        throw new Exception("modification does not have a corresponding class property");
-                    modProps[pi] = (p.OriginalValue, p.CurrentValue);
+                    Console.WriteLine($"  * [{p.Metadata.Name}] = [{p.OriginalValue}] -> [{p.CurrentValue}]");
+                    modProps[p.Metadata.Name] = (p.OriginalValue, p.CurrentValue);
                 }
 
                 undoMod.Add((ent.Entity, modProps));
@@ -83,7 +85,7 @@ public class DbContextChangeBuilder
                 foreach (var p in e.modProps)
                 {
                     var val = p.Value.newVal;
-                    p.Key.SetValue(e.ent, val);
+                    ent.Property(p.Key).CurrentValue = val;
                 }
             }
 
@@ -113,7 +115,7 @@ public class DbContextChangeBuilder
                 foreach (var p in e.modProps)
                 {
                     var val = p.Value.oldVal;
-                    p.Key.SetValue(e.ent, val);
+                    ent.Property(p.Key).CurrentValue = val;
                 }
             }
 

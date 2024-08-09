@@ -45,8 +45,9 @@
                         </RadzenMenuItem>
                     </RadzenMenuItem>
                 </RadzenMenuItem>
-                <RadzenMenuItem Text="Ent" Click=@NewEntity />
-                <RadzenMenuItem Text="Rel" Click=@NewRelationship />
+                <RadzenMenuItem Text="+Dom" Click=@NewDomain />
+                <RadzenMenuItem Text="+Ent" Click=@NewEntity />
+                <RadzenMenuItem Text="+Rel" Click=@NewRelationship />
             </RadzenMenu>
             
             <RadzenSelectBar @bind-Value=@value TValue="int" class="rz-ml-10">

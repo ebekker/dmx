@@ -12,6 +12,9 @@ public class AppState
     public DPoint? EntityDetailsPoint { get; set; }
     public DSize EntityDetailsSize { get; set; } = new(500, 500);
 
+    public DPoint? AttributeDetailsPoint { get; set; }
+    public DSize AttributeDetailsSize { get; set; } = new(500, 500);
+
     public DPoint? RelationshipDetailsPoint { get; set; }
     public DSize RelationshipDetailsSize { get; set; } = new(500, 500);
 

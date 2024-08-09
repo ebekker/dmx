@@ -339,9 +339,9 @@ public partial class Perspective : IDisposable
 
     private void Diagram_ContainerChanged()
     {
-        Console.WriteLine($"Container Changed {DateTime.Now}:");
-        Console.WriteLine(JsonSerializer.Serialize(Diagram.Container,
-            AppGlobals.WriteIndentedOptions));
+        //Console.WriteLine($"Container Changed {DateTime.Now}:");
+        //Console.WriteLine(JsonSerializer.Serialize(Diagram.Container,
+        //    AppGlobals.WriteIndentedOptions));
 
         AppEvents.FireDiagramContainerChanged(this, Diagram.Container);
     }

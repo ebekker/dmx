@@ -30,11 +30,15 @@
                 </RadzenStack>
             </RadzenTabsItem>
             <RadzenTabsItem Text="Attributes">
-                <RadzenDataGrid TItem="DmxAttribute" ColumnWidth="200px"
+                <RadzenDataGrid TItem="DmxAttribute" @ref=_attrGrid
+                                ColumnWidth="200px"
                                 AllowAlternatingRows=@false
                                 AllowFiltering=@false AllowPaging=@false
                                 AllowColumnResize=@true
                                 xx-PageSize=@(100)
+                                SelectionMode="DataGridSelectionMode.Single"
+                                AllowRowSelectOnRowClick="@true"
+                                @bind-Value=_selectedAttributes
                                 AllowSorting=@false
                                 Data=@(Entity.Attributes)
                                 RowUpdate=@(OnUpdateRow)
@@ -104,6 +108,13 @@
 
                     </Columns>
                 </RadzenDataGrid>
+                <RadzenStack Orientation="Orientation.Horizontal">
+                    <RadzenButton Text="Add"
+                                  Click="() => EditAttr()" />
+                    <RadzenButton Text="Edit"
+                                  Disabled=@((_selectedAttributes?.Count ?? 0) < 1)
+                                  Click="() => EditAttr(_selectedAttributes!.First())" />
+                </RadzenStack>
             </RadzenTabsItem>
             <RadzenTabsItem Text="Visual">
                 <RadzenStack Orientation=@(Orientation.Vertical)>
@@ -111,7 +122,7 @@
                         <RadzenNumeric @bind-Value=@(Entity.PosX) />
                     </RadzenFormField>
                     <RadzenFormField Text="Pos Y">
-                        <RadzenNumeric @bind-Value=@(Entity.PosX) />
+                        <RadzenNumeric @bind-Value=@(Entity.PoxY) />
                     </RadzenFormField>
                     <RadzenFormField Text="Z Order">
                         <RadzenNumeric @bind-Value=@(Entity.ZOrder) />
@@ -130,15 +141,15 @@
     <RadzenStack class="dlgbuttons" Orientation="Orientation.Horizontal"
                  Gap="0.5rem" AlignItems="AlignItems.Center" Style=""
                  JustifyContent="JustifyContent.SpaceBetween">
-        @*
-        <RadzenButton Text="Refresh" Click=@(() => StateHasChanged())
+        
+        <RadzenButton Text="Delete" Click=@(() => DialogSvc.Close(DetailsResult.Delete))
                       ButtonStyle="ButtonStyle.Light" />
-                      *@
+                     
         <RadzenStack Orientation="Orientation.Horizontal">
-            <RadzenButton Text="Ok" Style="width: 80px;"
-                          Click="() => DialogSvc.Close(true)" />
+            <RadzenButton Text="OK" Style="width: 80px;"
+                          Click="() => DialogSvc.Close(DetailsResult.OK)" />
             <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light"
-                          Click="() => DialogSvc.Close(false)" />
+                          Click="() => DialogSvc.Close(DetailsResult.Cancel)" />
         </RadzenStack>
     </RadzenStack>
 </RadzenStack>

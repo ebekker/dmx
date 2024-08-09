@@ -4,6 +4,18 @@
             <RadzenTabsItem Text="General">
                 <RadzenStack Orientation="Orientation.Vertical" Gap="3px"
                              class="fullsize">
+                    <RadzenStack Orientation="Orientation.Horizontal"
+                                 JustifyContent="JustifyContent.Stretch"
+                                 AlignItems="AlignItems.Stretch">
+                        <RadzenFormField Text="Parent">
+                            <RadzenTextBox Value=@Relationship.Parent.Name
+                                           ReadOnly="@true" />
+                        </RadzenFormField>
+                        <RadzenFormField Text="Child">
+                            <RadzenTextBox Value=@Relationship.Child.Name
+                                           ReadOnly="@true" />
+                        </RadzenFormField>
+                    </RadzenStack>
                     <RadzenFormField Text="Name">
                         <RadzenTextBox @bind-Value=@Relationship.Name />
                     </RadzenFormField>

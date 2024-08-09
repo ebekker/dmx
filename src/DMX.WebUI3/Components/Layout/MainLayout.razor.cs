@@ -2,15 +2,19 @@
 // Copyright (C) Eugene Bekker.
 
 using Blazor.Diagrams.Core.Geometry;
+using DMX.AppDB;
+using Microsoft.EntityFrameworkCore;
 
 namespace DMX.WebUI3.Components.Layout;
 
 public partial class MainLayout : IDisposable
 {
+    [Inject] private IDbContextFactory<AppDbContext> DbFactory { get; set; } = default!;
     [Inject] private DialogService DialogSvc { get; set; } = default!;
     [Inject] private AppState AppState { get; set; } = default!;
     [Inject] private AppEvents AppEvents { get; set; } = default!;
     [Inject] private AppChanges AppChanges { get; set; } = default!;
+    [Inject] private DbContextChangeBuilder ChangeBuilder { get; set; } = default!;
 
     private bool _disposedValue;
 
@@ -74,32 +78,85 @@ public partial class MainLayout : IDisposable
         StateHasChanged();
     }
 
-    private async Task NewEntity()
+    private async Task NewDomain()
     {
-        await EntityDetails.ShowAsync(DialogSvc, new()
+        using var db = await DbFactory.CreateDbContextAsync();
+
+        var allDomNames = await db.Domains
+            .Select(x => x.Name).ToListAsync();
+        var d = new DmxDomain()
         {
-            Name = "Entity1",
-            Description = "First entity.",
-            Attributes = new()
-            {
-                new()
-                {
-                    Name = "Attribute1",
-                    IsPrimaryKey = true,
-                },
-                new()
-                {
-                    Name = "Attribute2",
-                }
-            }
-        },
-        initPoint: null, //AppState.EntityDetailsPoint,
-        initSize: AppState.EntityDetailsSize);
+            Name = ModelTool.NextAvailableName(allDomNames, "Domain"),
+        };
+        var result = await DomainDetails.ShowAsync(DialogSvc, d,
+            initPoint: null, //AppState.DomainDetailsPoint,
+            initSize: AppState.DomainDetailsSize);
+
+        if (result ?? false)
+        {
+            db.Domains.Add(d);
+            var change = ChangeBuilder.Build(db)!;
+
+            await db.SaveChangesAsync();
+            AppChanges.Push(change);
+            AppEvents.FireDataModelChanged(this);
+        }
     }
 
-    private void NewRelationship()
-    {
+    private Task NewEntity() => NewEntityAt();
 
+
+    private async Task NewEntityAt(int? posX = null, int? posY = null)
+    {
+        using var db = await DbFactory.CreateDbContextAsync();
+
+        var allEntNames = await db.Entities
+            .Select(x => x.Name).ToListAsync();
+        var e = new DmxEntity
+        {
+            Name = ModelTool.NextAvailableName(allEntNames, "Entity"),
+            PosX = posX,
+            PoxY = posY,
+        };
+        var result = await EntityDetails.ShowAsync(DialogSvc, e,
+            initPoint: null, //AppState.EntityDetailsPoint,
+            initSize: AppState.EntityDetailsSize)
+            ?? DetailsResult.Cancel;
+
+        if (result == DetailsResult.OK)
+        {
+            db.Entities.Add(e);
+            var change = ChangeBuilder.Build(db)!;
+
+            await db.SaveChangesAsync();
+            AppChanges.Push(change);
+            AppEvents.FireDataModelChanged(this);
+        }
+    }
+
+    private async void NewRelationship()
+    {
+        using var db = await DbFactory.CreateDbContextAsync();
+
+        var r = new DmxRelationship
+        {
+            //Parent = firstEnt,
+            //Child = firstEnt,
+        };
+        var result = await NewRelationshipDetails.ShowAsync(DialogSvc, db, r,
+            initPoint: null, //AppState.EntityDetailsPoint,
+            initSize: AppState.RelationshipDetailsSize)
+            ?? false;
+
+        if (result)
+        {
+            db.Relationships.Add(r);
+            var change = ChangeBuilder.Build(db);
+
+            await db.SaveChangesAsync();
+            AppChanges.Push(change);
+            AppEvents.FireDataModelChanged(this);
+        }
     }
 
     protected virtual void Dispose(bool disposing)

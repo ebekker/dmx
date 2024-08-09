@@ -37,5 +37,6 @@ public class AppDbContext : DbContext
     public DbSet<DmxDomain> Domains { get; set; } = default!;
     public DbSet<DmxEntity> Entities { get; set; } = default!;
     public DbSet<DmxRelationship> Relationships { get; set; } = default!;
+    public DbSet<DmxRelationshipPair> RelationshipPairs { get; set; } = default!;
     public DbSet<DmxShape> Shapes { get; set; } = default!;
 }

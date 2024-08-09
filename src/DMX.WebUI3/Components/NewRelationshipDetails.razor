@@ -1,0 +1,113 @@
+﻿<RadzenStack class="dlgbody">
+    <RadzenTabs class="dlgtabs" Style="grid-row: 1;">
+        <Tabs>
+            <RadzenTabsItem Text="General">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="3px"
+                             class="fullsize">
+                    <RadzenFormField Text="Parent">
+                        <RadzenDropDown TValue="DmxEntity"
+                                        Data="_entities"
+                                        @bind-Value="_parent"
+                                        @bind-Value:after="AfterParentUpdate"
+                                        AllowClear="false"
+                                        AllowFiltering="false">
+                            <Template>@context.Name</Template>
+                        </RadzenDropDown>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Child">
+                        <RadzenDropDown TValue="DmxEntity"
+                                        Data="_entities"
+                                        @bind-Value="_child"
+                                        @bind-Value:after="AfterChildUpdate"
+                                        AllowClear="false"
+                                        AllowFiltering="false">
+                            <Template>@context.Name</Template>
+                        </RadzenDropDown>
+                    </RadzenFormField>
+                    <RadzenFormField Text="Name">
+                        <RadzenTextBox @bind-Value=@Relationship.Name />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Description">
+                        <RadzenTextArea @bind-Value=@Relationship.Description />
+                    </RadzenFormField>
+                </RadzenStack>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Attributes">
+                <RadzenRow>
+                    <RadzenColumn Size="4">
+                        <RadzenText Text="Parent Attribute"
+                                       Style="width: 100%;" />
+                    </RadzenColumn>
+                    <RadzenColumn Size="4">
+                        <RadzenText Text="Existing Child Attribute"
+                                    Style="width: 100%;" />
+                    </RadzenColumn>
+                    <RadzenColumn Size="4">
+                        <RadzenText Text="New Child Attribute"
+                                    Style="width: 100%;" />
+                    </RadzenColumn>
+                </RadzenRow>
+                @foreach (var rp in _relPairs)
+                {
+                    <RadzenRow>
+                        <RadzenColumn Size="4">
+                            <RadzenTextBox Value=@(rp.Parent.Name)
+                                           ReadOnly="true"
+                                           Style="width: 100%;" />
+
+                        </RadzenColumn>
+                        <RadzenColumn Size="4">
+                            <RadzenDropDown TValue="DmxAttribute"
+                                            Data="_child!.Attributes"
+                                            @bind-Value=@(rp.Child)
+                                            AllowClear="true"
+                                            Style="width: 100%;">
+                                <Template>@context.Name</Template>
+                                <EmptyTemplate><i>(new)</i></EmptyTemplate>
+                            </RadzenDropDown>
+                        </RadzenColumn>
+                        <RadzenColumn Size="4">
+                            <RadzenTextBox @bind-Value=@(rp.NewChild)
+                                           Disabled="rp.Child != null"
+                                           Style="width: 100%;"/>
+                        </RadzenColumn>
+                    </RadzenRow>
+                }
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Visual">
+                <RadzenStack Orientation=@(Orientation.Vertical)>
+                    <RadzenFormField Text="Child Edge">
+                        <RadzenNumeric @bind-Value=@(Relationship.ChildEdge) />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Child Offset">
+                        <RadzenNumeric @bind-Value=@(Relationship.ChildEdgeOffset) />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Parent Edge">
+                        <RadzenNumeric @bind-Value=@(Relationship.ParentEdge) />
+                    </RadzenFormField>
+                    <RadzenFormField Text="Child Offset">
+                        <RadzenNumeric @bind-Value=@(Relationship.ParentEdgeOffset) />
+                    </RadzenFormField>
+                </RadzenStack>
+            </RadzenTabsItem>
+            <RadzenTabsItem Text="Memo" Style="height: 100%;">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="3px"
+                             class="fullsize">
+                    <RadzenTextArea @bind-Value=@(Relationship.Memo)
+                                    class="noresize fullsize" />
+                </RadzenStack>
+            </RadzenTabsItem>
+        </Tabs>
+    </RadzenTabs>
+    <RadzenStack class="dlgbuttons" Orientation="Orientation.Horizontal"
+                 Gap="0.5rem" AlignItems="AlignItems.Center" Style=""
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <RadzenStack Orientation="Orientation.Horizontal">
+            <RadzenButton Text="Ok" Style="width: 80px;"
+                          Disabled=@(_parent == null || _child == null)
+                          Click="() => DoOK()" />
+            <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light"
+                          Click="() => DialogSvc.Close(false)" />
+        </RadzenStack>
+    </RadzenStack>
+</RadzenStack>
