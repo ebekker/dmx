@@ -11,12 +11,15 @@ namespace DMX.WebUI3.Components.Pages;
 
 public partial class Home : IDisposable
 {
+    [Inject] private ILogger<Home> Logger { get; set; } = default!;
     [Inject] private IDbContextFactory<AppDbContext> DBFactory { get; set; } = default!;
     [Inject] private DialogService DialogSvc { get; set; } = default!;
     [Inject] private AppState AppState { get; set; } = default!;
     [Inject] private AppEvents AppEvents { get; set; } = default!;
     [Inject] private AppChanges AppChanges { get; set; } = default!;
     [Inject] private DbContextChangeBuilder ChangeBuilder { get; set; } = default!;
+
+    [Inject] private AppServices Services { get; set; } = default!;
 
     List<DmxDomain> _doms = [];
     List<DmxEntity> _ents = [];
@@ -28,13 +31,38 @@ public partial class Home : IDisposable
         AppEvents.OnDataModelChanged += AppEvents_OnDataModelChanged;
         AppEvents.OnDoubleClickElement += AppEvents_OnDoubleClickElement;
 
+        Services.Events.ZoomCommand += Events_ZoomCommand;
+
         await ComputeDetails();
     }
 
     public void Dispose()
     {
+        Services.Events.ZoomCommand -= Events_ZoomCommand;
+
         AppEvents.OnDoubleClickElement -= AppEvents_OnDoubleClickElement;
         AppEvents.OnDataModelChanged -= AppEvents_OnDataModelChanged;
+    }
+
+    private void Events_ZoomCommand(object? sender, Events.ZoomCommandEventArgs ev)
+    {
+        //ev.AddInvoke(() =>
+        //{
+        //    Console.WriteLine("Zoom Command: " + ev.Zoom);
+        //    return Task.CompletedTask;
+        //});
+    }
+
+    async Task ZoomOut()
+    {
+        AppState.Zoom -= 0.1;
+        await Services.Events.FireZoomCommandAsync(this, AppState.Zoom);
+    }
+
+    async Task ZoomIn()
+    {
+        AppState.Zoom += 0.1;
+        await Services.Events.FireZoomCommandAsync(this, AppState.Zoom);
     }
 
     async Task ComputeDetails()
@@ -56,11 +84,14 @@ public partial class Home : IDisposable
         _shapes = await db.Shapes.ToListAsync();
     }
 
-    private void AppEvents_OnDataModelChanged(object? sender, EventArgs e)
+    private void AppEvents_OnDataModelChanged(object? sender, AsyncEventArgs e)
     {
-        // What do to with this task?
-        var task = ComputeDetails();
-        Task.WaitAny(task);
+        e.AddTask(AppEvents_OnDataModelChangedAsync());
+    }
+
+    private async Task AppEvents_OnDataModelChangedAsync()
+    {
+        await ComputeDetails();
         StateHasChanged();
     }
 
@@ -116,7 +147,7 @@ public partial class Home : IDisposable
         {
             await db.SaveChangesAsync();
             AppChanges.Push(change);
-            AppEvents.FireDataModelChanged(this);
+            await AppEvents.FireDataModelChangedAsync(this);
         }
         else
         {
@@ -252,15 +283,21 @@ public partial class Home : IDisposable
             initSize: AppState.EntityDetailsSize)
             ?? DetailsResult.Cancel;
 
+        if (result == DetailsResult.Delete)
+        {
+            Logger.LogInformation("Deleting Entity");
+            Services.Model.RemoveEntity(db, e);
+        }
+
         var change = ChangeBuilder.Build(db);
         if (change == null)
             return;
 
-        if (result == DetailsResult.OK)
+        if (result == DetailsResult.OK || result == DetailsResult.Delete)
         {
             await db.SaveChangesAsync();
             AppChanges.Push(change);
-            AppEvents.FireDataModelChanged(this);
+            await AppEvents.FireDataModelChangedAsync(this);
         }
         else // Assume DetailsResult.Cancel
         {
@@ -274,17 +311,23 @@ public partial class Home : IDisposable
         db.Attach(r);
         var result = await RelationshipDetails.ShowAsync(DialogSvc, r,
             initPoint: null, //AppState.RelationshipDetailsPoint,
-            initSize: AppState.RelationshipDetailsSize);
+            initSize: AppState.RelationshipDetailsSize)
+            ?? DetailsResult.Cancel;
+
+        if (result == DetailsResult.Delete)
+        {
+            Services.Model.RemoveRelationship(db, r);
+        }
 
         var change = ChangeBuilder.Build(db);
         if (change == null)
             return;
 
-        if (result ?? false)
+        if (result == DetailsResult.OK || result == DetailsResult.Delete)
         {
             await db.SaveChangesAsync();
             AppChanges.Push(change);
-            AppEvents.FireDataModelChanged(this);
+            await AppEvents.FireDataModelChangedAsync(this);
         }
         else
         {

@@ -22,6 +22,8 @@ public partial class Perspective : IDisposable
     [Inject] private AppEvents AppEvents { get; set; } = default!;
     [Inject] private AppChanges AppChanges { get; set; } = default!;
 
+    [Inject] private AppServices Services { get; set; } = default!;
+
     private bool? _gridLines;
     private double _gridSize = 20;
 
@@ -36,6 +38,47 @@ public partial class Perspective : IDisposable
         AppEvents.OnVisualChanged += AppEvents_OnVisualChanged;
         AppEvents.OnDataModelChanged += AppEvents_OnDataModelChanged;
 
+        Services.Events.ZoomCommand += Events_ZoomCommand;
+
+        await InitDiagram();
+    }
+
+    Services.PrefsService.PerspectivePrefs? _pprefs;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+
+            await Services.BrowserStorage.LocalStorage.SetItem("lastLoaded", DateTime.Now.ToString());
+            await Services.BrowserStorage.SessionStorage.SetItem("lastLoaded", DateTime.Now.ToString());
+
+            _pprefs = await Services.Prefs.LoadPerspective(Guid.Empty);
+
+            Diagram.SetZoom(_pprefs!.Zoom);
+            Diagram.SetPan(_pprefs.PanX, _pprefs.PanY);
+            AppState.Zoom = _pprefs.Zoom;
+        }
+    }
+
+    protected virtual void OnDispose()
+    {
+        UnloadModel();
+
+        Diagram.PointerDoubleClick -= Diagram_PointerDoubleClick;
+
+        Diagram.ContainerChanged -= Diagram_ContainerChanged;
+        Diagram.Changed -= Diagram_Changed;
+
+        Services.Events.ZoomCommand -= Events_ZoomCommand;
+
+        AppEvents.OnDataModelChanged -= AppEvents_OnDataModelChanged;
+        AppEvents.OnVisualChanged -= AppEvents_OnVisualChanged;
+        AppEvents.OnResetToOrigin -= AppEvents_OnResetToOrigin;
+    }
+
+    private async Task InitDiagram()
+    {
         _gridLines = AppState.GridLines;
         _gridSize = AppState.GridSize;
 
@@ -57,26 +100,27 @@ public partial class Perspective : IDisposable
         await LoadModel();
     }
 
-    protected virtual void OnDispose()
+    private void Events_ZoomCommand(object? sender, Events.ZoomCommandEventArgs ev)
     {
-        UnloadModel();
+        Console.WriteLine($"Got Zoom: [{ev.Zoom}]");
+        Diagram.SetZoom(ev.Zoom);
+        _pprefs!.Zoom = ev.Zoom;
+        AppState.Zoom = ev.Zoom;
+        var t = Services.Prefs.Save(Guid.Empty, _pprefs);
 
-        Diagram.PointerDoubleClick -= Diagram_PointerDoubleClick;
-
-        Diagram.ContainerChanged -= Diagram_ContainerChanged;
-        Diagram.Changed -= Diagram_Changed;
-
-        AppEvents.OnDataModelChanged -= AppEvents_OnDataModelChanged;
-        AppEvents.OnVisualChanged -= AppEvents_OnVisualChanged;
-        AppEvents.OnResetToOrigin -= AppEvents_OnResetToOrigin;
     }
 
-    private void AppEvents_OnDataModelChanged(object? sender, EventArgs e)
+    private void AppEvents_OnDataModelChanged(object? sender, AsyncEventArgs ev)
+    {
+        ev.AddTask(AppEvents_OnDataModelChangedAsync());
+    }
+
+    private async Task AppEvents_OnDataModelChangedAsync()
     {
         Console.Error.WriteLine("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         Console.Error.WriteLine("Updating Perspective with DataModel changes...");
-        // What do do with this task?
-        var task = LoadModel(true);
+        await LoadModel(true);
+        Console.Error.WriteLine("...updated!");
     }
 
     private void Diagram_PointerDoubleClick(
@@ -189,27 +233,6 @@ public partial class Perspective : IDisposable
                 }
             }
 
-            //var cport = c.AddPort(PortAlignment.Top);
-            //var cport = c.AddPort(new PortModel(c, PortAlignment.Top, new BPoint(5, 5), new BSize(15, 15)));
-            //var pport = p.AddPort(PortAlignment.Bottom);
-            //var link = Diagram.Links.Add(new LinkModel(cport, pport));
-            //link.Router = new OrthogonalRouter(); // Only works with Ports
-            //link.PathGenerator = new StraightPathGenerator();
-
-            //var canchor = new SinglePortAnchor(cport);
-            //var panchor = new SinglePortAnchor(pport);
-            //var link = Diagram.Links.Add(new LinkModel(canchor, panchor));
-            //link.PathGenerator = new StraightPathGenerator();
-
-            // Custom Ortho Router for Entity Anchors
-            //var canchor = new EntityAnchor(c);
-            //var panchor = new EntityAnchor(p);
-            //var link = Diagram.Links.Add(new RelationshipLinkModel(r, canchor, panchor));
-            //link.Router = new OrthoAnchorRouter();
-            //link.PathGenerator = new StraightPathGenerator();
-            //link.SourceMarker = LinkMarker.Circle;
-            //link.TargetMarker = LinkMarker.Arrow;
-
             var cAnchor = new EntityIntersectionAnchor(c);
             var pAnchor = new EntityIntersectionAnchor(p);
             var link = Diagram.Links.Add(new RelationshipLinkModel(r, cAnchor, pAnchor));
@@ -217,17 +240,6 @@ public partial class Perspective : IDisposable
             link.PathGenerator = new StraightPathGenerator();
             link.SourceMarker = LinkMarker.Circle;
             link.TargetMarker = LinkMarker.Arrow;
-
-            // Bad experiment
-            //var cAnchor = new EntityAnchor(c);
-            //var pAnchor = new EntityAnchor(p);
-            //var cAlign = EntityAnchor.GetAlignment(r, c, cAnchor, pAnchor, false);
-            //var pAlign = EntityAnchor.GetAlignment(r, c, cAnchor, pAnchor, true);
-            //var cPort = c.AddPort(cAlign);
-            //var pPort = p.AddPort(pAlign);
-            //var link = Diagram.Links.Add(new LinkModel(cPort, pPort));
-            //link.Router = new OrthogonalRouter(); // Only works with Ports
-            //link.PathGenerator = new StraightPathGenerator();
         }
 
         if (refresh && allLinks.Count > 0)
@@ -235,6 +247,7 @@ public partial class Perspective : IDisposable
             foreach (var l in allLinks)
             {
                 Diagram.Links.Remove(l);
+                l.Refresh();
             }
         }
 
@@ -333,6 +346,7 @@ public partial class Perspective : IDisposable
         _gridLines = AppState.GridLines;
         _gridSize = AppState.GridSize;
         DiagramOptions.GridSize = _gridLines != null ? (int)(_gridSize) : null;
+        Diagram.SetZoom(AppState.Zoom);
 
         Diagram.Refresh();
     }

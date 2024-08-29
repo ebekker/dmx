@@ -73,12 +73,22 @@
                     <RadzenButton Icon="flip_to_front" title="raise to front" Disabled=@true
                                   ButtonStyle="ButtonStyle.Light" />
                 </RadzenStack>
-
+                <RadzenStack Orientation=@(Orientation.Horizontal) Gap="1">
+                    <RadzenButton Icon="zoom_out" title="zoom out"
+                                  Click="ZoomOut"
+                                  ButtonStyle="ButtonStyle.Light" />
+                    <RadzenButton Icon="zoom_in" title="zoom out"
+                                  Click="ZoomIn"
+                                  ButtonStyle="ButtonStyle.Light" />
+                </RadzenStack>
             </RadzenStack>
             <RadzenTabs id="main-tabs" TabPosition="TabPosition.Bottom" Style="height: 100%;">
                 <Tabs>
-                    <RadzenTabsItem Text="Perspective1">
-                        <Perspective />
+                    <RadzenTabsItem>
+                        <Template><i>[MAIN]</i></Template>
+                        <ChildContent>
+                            <Perspective @rendermode=@(RenderMode.InteractiveServer) />
+                        </ChildContent>
                     </RadzenTabsItem>
                     <RadzenTabsItem Text="Visual Test">
                         <Template>

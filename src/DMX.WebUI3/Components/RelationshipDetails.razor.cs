@@ -109,7 +109,7 @@ public partial class RelationshipDetails : IDisposable
         //editedFields = editedFields.Where(c => c.Key != order.OrderID).ToList();
     }
 
-    public static async Task<bool?> ShowAsync(DialogService dlg, DmxRelationship relationship,
+    public static async Task<DetailsResult?> ShowAsync(DialogService dlg, DmxRelationship relationship,
         DPoint? initPoint = null, DSize? initSize = null)
     {
         var dragSignal = new AppSignal<DPoint>();
@@ -138,7 +138,7 @@ public partial class RelationshipDetails : IDisposable
             opts.Height = initSize.Value.Height + "px";
         }
 
-        var result = (bool?)await dlg.OpenAsync<RelationshipDetails>(
+        var result = (DetailsResult?)await dlg.OpenAsync<RelationshipDetails>(
             $"Relationship '{relationship.Name}'", @params, opts);
 
         return result;

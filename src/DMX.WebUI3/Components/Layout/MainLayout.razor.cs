@@ -16,6 +16,8 @@ public partial class MainLayout : IDisposable
     [Inject] private AppChanges AppChanges { get; set; } = default!;
     [Inject] private DbContextChangeBuilder ChangeBuilder { get; set; } = default!;
 
+    [Inject] private AppServices Services { get; set; } = default!;
+
     private bool _disposedValue;
 
     private Rectangle? _diagramContainer;
@@ -28,10 +30,14 @@ public partial class MainLayout : IDisposable
         AppEvents.OnChangeAdded += AppEvents_OnChangeAdded;
         AppEvents.OnChangeUndo += AppEvents_OnChangeUndo;
         AppEvents.OnChangeRedo += AppEvents_OnChangeRedo;
+
+        Services.Events.ZoomCommand += Events_ZoomCommand; ;
     }
 
     protected virtual void OnDispose()
     {
+        Services.Events.ZoomCommand -= Events_ZoomCommand;
+     
         AppEvents.OnChangeRedo -= AppEvents_OnChangeRedo;
         AppEvents.OnChangeUndo -= AppEvents_OnChangeUndo;
         AppEvents.OnChangeAdded -= AppEvents_OnChangeAdded;
@@ -50,6 +56,11 @@ public partial class MainLayout : IDisposable
     {
         AppState.GridSize = size;
         AppEvents.FireVisualChanged(this);
+    }
+
+    private void Events_ZoomCommand(object? sender, Events.ZoomCommandEventArgs ev)
+    {
+        StateHasChanged();
     }
 
     private void AppEvents_OnAppStateChanged(object? sender, EventArgs e)
@@ -86,7 +97,7 @@ public partial class MainLayout : IDisposable
             .Select(x => x.Name).ToListAsync();
         var d = new DmxDomain()
         {
-            Name = ModelTool.NextAvailableName(allDomNames, "Domain"),
+            Name = Services.Model.NextAvailableName(allDomNames, "Domain"),
         };
         var result = await DomainDetails.ShowAsync(DialogSvc, d,
             initPoint: null, //AppState.DomainDetailsPoint,
@@ -99,7 +110,7 @@ public partial class MainLayout : IDisposable
 
             await db.SaveChangesAsync();
             AppChanges.Push(change);
-            AppEvents.FireDataModelChanged(this);
+            await AppEvents.FireDataModelChangedAsync(this);
         }
     }
 
@@ -114,7 +125,7 @@ public partial class MainLayout : IDisposable
             .Select(x => x.Name).ToListAsync();
         var e = new DmxEntity
         {
-            Name = ModelTool.NextAvailableName(allEntNames, "Entity"),
+            Name = Services.Model.NextAvailableName(allEntNames, "Entity"),
             PosX = posX,
             PoxY = posY,
         };
@@ -130,8 +141,8 @@ public partial class MainLayout : IDisposable
 
             await db.SaveChangesAsync();
             AppChanges.Push(change);
-            AppEvents.FireDataModelChanged(this);
-        }
+            await AppEvents.FireDataModelChangedAsync(this);
+       }
     }
 
     private async void NewRelationship()
@@ -151,11 +162,11 @@ public partial class MainLayout : IDisposable
         if (result)
         {
             db.Relationships.Add(r);
-            var change = ChangeBuilder.Build(db);
+            var change = ChangeBuilder.Build(db)!;
 
             await db.SaveChangesAsync();
             AppChanges.Push(change);
-            AppEvents.FireDataModelChanged(this);
+            await AppEvents.FireDataModelChangedAsync(this);
         }
     }
 

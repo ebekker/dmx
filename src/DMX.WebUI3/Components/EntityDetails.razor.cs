@@ -22,6 +22,8 @@ public partial class EntityDetails : IDisposable
     [Inject] private AppEvents AppEvents { get; set; } = default!;
     [Inject] private DbContextChangeBuilder ChangeBuilder { get; set; } = default!;
 
+    [Inject] private AppServices Services { get; set; } = default!;
+
     RadzenDataGrid<DmxAttribute>? _attrGrid;
 
     protected override void OnInitialized()
@@ -133,7 +135,7 @@ public partial class EntityDetails : IDisposable
                 .Select(x => x.Name).ToList();
             a = new()
             {
-                Name = ModelTool.NextAvailableName(allAttrNames, "Attr"),
+                Name = Services.Model.NextAvailableName(allAttrNames, "Attr"),
                 Entity = Entity,
             };
         }
@@ -156,7 +158,7 @@ public partial class EntityDetails : IDisposable
         {
             if (attr != null)
             {
-                ModelTool.RemoveAttribute(db, Entity, attr);
+                Services.Model.RemoveAttribute(db, Entity, attr);
                 return;
             }
         }

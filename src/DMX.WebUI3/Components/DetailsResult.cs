@@ -10,7 +10,7 @@ public class DetailsResult : IEquatable<DetailsResult>
     public static readonly DetailsResult Delete = new(nameof(Delete));
     public static readonly DetailsResult Refresh = new(nameof(Refresh));
 
-    private string _key;
+    private readonly string _key;
 
     private DetailsResult(string key)
     {
@@ -24,5 +24,5 @@ public class DetailsResult : IEquatable<DetailsResult>
     public override bool Equals(object? obj) =>
         obj is DetailsResult && Equals((DetailsResult)obj);
 
-    public bool Equals(DetailsResult? other) => _key.Equals(other._key);
+    public bool Equals(DetailsResult? other) => string.Equals(_key, other?._key);
 }

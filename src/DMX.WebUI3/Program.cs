@@ -3,8 +3,12 @@
 
 using DMX.AppDB;
 using DMX.WebUI3.Components;
+using DMX.WebUI3.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Serilog;
+using Serilog.Templates.Themes;
+using Serilog.Templates;
 
 namespace DMX.WebUI3;
 
@@ -12,7 +16,25 @@ public partial class Program
 {
     public static async Task Main(string[] args)
     {
+        // The initial "bootstrap" logger is able to log errors during start-up. It's completely replaced by the
+        // logger configured in `AddSerilog()` below, once configuration and dependency-injection have both been
+        // set up successfully.
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateBootstrapLogger();
+        Log.Information("DMX booting up...");
+
         var builder = WebApplication.CreateBuilder(args);
+
+        // Add runtime logging
+        builder.Services.AddSerilog((services, lc) => lc
+            .ReadFrom.Configuration(builder.Configuration)
+            .ReadFrom.Services(services)
+            .Enrich.FromLogContext()
+            .WriteTo.Console(new ExpressionTemplate(
+                // Include trace and span ids when present.
+                "[{@t:HH:mm:ss} {@l:u3}{#if @tr is not null} ({substring(@tr,0,4)}:{substring(@sp,0,4)}){#end}] {@m}\n{@x}",
+                theme: TemplateTheme.Code)));
 
         // Add services to the container.
 
@@ -33,6 +55,12 @@ public partial class Program
         builder.Services.AddScoped<AppEvents>();
         builder.Services.AddScoped<AppChanges>();
         builder.Services.AddScoped<DbContextChangeBuilder>();
+
+        builder.Services.AddScoped<EventsManager>();
+        builder.Services.AddScoped<ModelManager>();
+        builder.Services.AddScoped<BrowserStorageService>();
+        builder.Services.AddScoped<PrefsService>();
+        builder.Services.AddScoped<AppServices>();
 
         var app = builder.Build();
         var log = app.Services.GetRequiredService<ILogger<Program>>();

@@ -141,10 +141,9 @@
     <RadzenStack class="dlgbuttons" Orientation="Orientation.Horizontal"
                  Gap="0.5rem" AlignItems="AlignItems.Center" Style=""
                  JustifyContent="JustifyContent.SpaceBetween">
-        
-        <RadzenButton Text="Delete" Click=@(() => DialogSvc.Close(DetailsResult.Delete))
+        <RadzenButton Text="Delete"
+                      Click=@(() => DialogSvc.Close(DetailsResult.Delete))
                       ButtonStyle="ButtonStyle.Light" />
-                     
         <RadzenStack Orientation="Orientation.Horizontal">
             <RadzenButton Text="OK" Style="width: 80px;"
                           Click="() => DialogSvc.Close(DetailsResult.OK)" />

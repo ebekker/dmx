@@ -17,6 +17,8 @@ public partial class NewRelationshipDetails : IDisposable
     [Inject] private AppState AppState { get; set; } = default!;
     [Inject] private AppEvents AppEvents { get; set; } = default!;
 
+    [Inject] private AppServices Services { get; set; } = default!;
+
     List<DmxEntity>? _entities;
     List<string>? _allRelNames;
     DmxEntity? _parent;
@@ -97,7 +99,7 @@ public partial class NewRelationshipDetails : IDisposable
         {
             var oldSName = _suggestedName;
             _suggestedName = $"{_child.Name}{_parent.Name}";
-            _suggestedName = ModelTool.NextAvailableName(_allRelNames!, _suggestedName, start: null);
+            _suggestedName = Services.Model.NextAvailableName(_allRelNames!, _suggestedName, start: null);
             if (string.IsNullOrWhiteSpace(Relationship.Name)
                 || string.Equals(Relationship.Name, oldSName))
             {
@@ -132,7 +134,7 @@ public partial class NewRelationshipDetails : IDisposable
 
             foreach (var rp in _relPairs)
             {
-                rp.NewChild = ModelTool.NextAvailableName(childNames,
+                rp.NewChild = Services.Model.NextAvailableName(childNames,
                     rp.Parent.Name, start: null);
             }
             UpdateName();

@@ -22,5 +22,5 @@ public class AppState
 
     public bool? GridLines { get; set; } = true;
     public double GridSize { get; set; } = 20;
-
+    public double Zoom { get; set; } = 1.0;
 }
